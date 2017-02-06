@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Echo Test</title>
+    </head>
+    <body>
+		<h1>Echo.js Test #3</h1>
+		<b>Simple man</b>
+		
+		<canvas id="echo" style="background:lightblue; border:1px solid black; width:400px"></canvas>
+		<script src="../EchoCanvas.js"></script>
+		<script src="../EchoObject.js"></script>
+		<script src="../EchoRectObject.js"></script>
+		<script src="../EchoTimeline.js"></script>
+		<script>
+			var echo = new EchoCanvas("echo", 525, 500);
+			
+			// Large chain
+			var head = new EchoRectObject("head",50,50,"yellow","black",1)
+				.setJoint("headNeck",25,40)
+				.move("x", 200).move("y", 150);
+		
+			var body = new EchoRectObject("body",100,150,"yellow","black",1)
+				.setJoint("leftPelvis",25,140)
+				.setJoint("rightPelvis",75,140)
+				.setJoint("leftArmpit",10,10)
+				.setJoint("rightArmpit",90,10)
+				.setJoint("neckBody",50,0)
+				.setAnchor("neckBody", "headNeck");
+			head.appendChild(body);
+			
+			var upperLeftLeg = new EchoRectObject("upperLeftLeg",25,75,"yellow","black",1)
+				.setJoint("leftLegBody",12,5)
+				.setJoint("leftKnee",12,70)
+				.setAnchor("leftLegBody", "leftPelvis");
+			body.appendChild(upperLeftLeg);
+			
+			var lowerLeftLeg = new EchoRectObject("lowerLeftLeg",25,75,"yellow","black",1)
+				.setJoint("leftKneeTop",12,5)
+				.setJoint("leftFoot",12,70)
+				.setAnchor("leftKneeTop", "leftKnee");
+			upperLeftLeg.appendChild(lowerLeftLeg);
+			
+			var upperRightLeg = new EchoRectObject("upperRightLeg",25,75,"yellow","black",1)
+				.setJoint("rightLegBody",12,5)
+				.setJoint("rightKnee",12,70)
+				.setAnchor("rightLegBody", "rightPelvis");
+			body.appendChild(upperRightLeg);
+			
+			var lowerRightLeg = new EchoRectObject("lowerRightLeg",25,75,"yellow","black",1)
+				.setJoint("rightKneeTop",12,5)
+				.setJoint("rightFoot",12,70)
+				.setAnchor("rightKneeTop", "rightKnee");
+			upperRightLeg.appendChild(lowerRightLeg);
+			
+			var upperLeftArm = new EchoRectObject("upperLeftArm",25,75,"yellow","black",1)
+				.setJoint("leftUpperArm",12,5)
+				.setJoint("leftElbow",12,70)
+				.setAnchor("leftUpperArm", "leftArmpit");
+			body.appendChild(upperLeftArm);
+			
+			var upperRightArm = new EchoRectObject("upperRightArm",25,75,"yellow","black",1)
+				.setJoint("rightUpperArm",12,5)
+				.setJoint("rightElbow",12,70)
+				.setAnchor("rightUpperArm", "rightArmpit");
+			body.appendChild(upperRightArm);
+					
+			echo.addObject(head);
+			echo.render();
+			
+			var timeline = new EchoTimeline(echo)
+				.animate({
+					time: 1500,
+					starttime: 0,
+					id: "upperRightLeg",
+					rotate: 40,
+					direction: "ccw"
+				}).animate({
+					time: 1500,
+					starttime: 0,
+					id: "lowerRightLeg",
+					rotate: 30,
+					direction: "cw"
+				}).animate({
+					time: 1500,
+					id: "upperRightLeg",
+					rotate: 30,
+					direction: "cw"
+				}).animate({
+					time: 1500,
+					id: "lowerRightLeg",
+					rotate: 30,
+					direction: "cw"
+				});
+						
+				timeline.render(function(){
+					timeline.play();
+					echo.render();
+				});
+				
+				
+		</script>
+    </body>
+</html>

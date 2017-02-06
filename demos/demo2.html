@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Echo Test</title>
+    </head>
+    <body>
+		<h1>Echo.js Test #2</h1>
+		<b>Animating a skeleton</b>
+		<p>Click the button to render and animate the chain: <button id="show">Animate</button></p>
+		
+		<canvas id="echo" style="background:lightblue; border:1px solid black; width:400px"></canvas>
+		<script src="../EchoCanvas.js"></script>
+		<script src="../EchoObject.js"></script>
+		<script src="../EchoTimeline.js"></script>
+		<script>
+			var echo = new EchoCanvas("echo", 525, 500);
+			
+			// Large chain
+			var chain0 = new EchoObject("chain0","chain.png")
+				.setJoint("left0", 45, 100)
+				.setJoint("right0", 155, 100)
+				.rotate(45);
+		
+			var chain1 = new EchoObject("chain1","chain.png")
+				.setJoint("left1", 45, 100)
+				.setJoint("right1", 155, 100)
+				.setAnchor("left1", "right0");
+		
+			var chain2 = new EchoObject("chain2","chain.png")
+				.setJoint("left2", 45, 100)
+				.setJoint("right2", 155, 100)
+				.setAnchor("left2", "right1")
+				.rotate(45);
+			
+			chain1.appendChild(chain2).rotateChildren(90);
+			chain0.appendChild(chain1).move("x",50).move("y",50);
+			
+			echo.addObject(chain0);
+			
+			// show the first frame while animation is processed and rendered
+			echo.render();
+			
+			var timeline = new EchoTimeline(echo)
+				.animate({
+					id: "chain0",
+					moveLeft: 30
+				}).animate({
+					id: "chain0",
+					moveRight: 30,
+					starttime:5000,
+					time:3000
+				}).animate({
+					id: "chain0",
+					moveUp: 100,
+					starttime:3000,
+					time:3000
+				}).animate({
+					id: "chain0",
+					moveDown: 60,
+					starttime:6000,
+					time:2000
+				}).animate({
+					id: "chain1",
+					rotate: 360,
+					direction: "cw",
+					time: 8000
+				}).animate({
+					id: "chain0",
+					rotate: 45,
+					time: 4000
+				}).animate({
+					id: "chain0",
+					rotate: 732,
+					direction: "ccw",
+					time: 4000
+				});
+			
+			document.getElementById('show').onclick = function(){
+				var orig = document.getElementById('show').innerHTML;
+				document.getElementById('show').innerHTML = "Rendering...";
+				timeline.render(function(){
+					document.getElementById('show').innerHTML = orig;
+					var time = new Date().getTime();
+					timeline.play(function(){
+						console.log("Run time:", (new Date().getTime()-time)/1000, "seconds");
+						echo.render();
+					});
+				});
+			};
+				
+				
+		</script>
+    </body>
+</html>
