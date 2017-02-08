@@ -22,6 +22,7 @@ function EchoObject(id,uri,x,y,w,h){
 	this.children = [];
 	this.parent = null;
 	this.rotation = 0;
+	this.eoType = "EchoObject";
 	
 	// Load the image
 	var img = new Image();
@@ -46,26 +47,26 @@ function EchoObject(id,uri,x,y,w,h){
 /**
  * Rotate the object and all it's children
  * @param Number degrees - Degrees to rotate
- * @param Function callback - A function to call when rotation is complete
+ * @param Function rcCbk - A function to call when rotation is complete
  * @returns EchoObject - The current EchoObject instance
  */
-EchoObject.prototype.rotateChildren = function(degrees, callback){
-	if("function" !== typeof callback) callback = function(){};
+EchoObject.prototype.rotateChildren = function(degrees, rcCbk){
+	if("function" !== typeof rcCbk) rcCbk = function(){};
 	this.rotate(degrees);
 	EchoCanvas.prototype.recurseObjects.call(this, function(obj, done){
 		obj.rotate(degrees, done);
-	},callback);
+	},rcCbk);
 	return this;
 };
 
 /**
  * Rotate the object
  * @param Number degrees - Degrees to rotate
- * @param Function callback - A function to call when rotation is complete
+ * @param Function rotateCallback - A function to call when rotation is complete
  * @returns EchoObject - The current EchoObject instance
  */
-EchoObject.prototype.rotate = function(degrees, callback){
-	if("function" !== typeof callback) callback = function(){};
+EchoObject.prototype.rotate = function(degrees, rotateCallback){
+	if("function" !== typeof rotateCallback) rotateCallback = function(){};
 	var _this = this;
 	this.onload(function(){
 		_this.rotation += degrees;
@@ -84,19 +85,19 @@ EchoObject.prototype.rotate = function(degrees, callback){
 		}
 		_this.anchorChildren();
 		if(typeof _this.parent.anchorChildren === "function") _this.parent.anchorChildren(); 
-		callback();
+		rotateCallback();
 	});
 	return this;
 };
 
 /**
  * Register a function to be called when the object loads
- * @param function callback - A function to call when the object loads
+ * @param function oCbk - A function to call when the object loads
  * @returns EchoObject - The current EchoObject instance
  */
-EchoObject.prototype.onload = function(callback){
-	if("function" !== typeof callback) callback = function(){};
-	this.loadCallbackStack.push(callback);
+EchoObject.prototype.onload = function(oCbk){
+	if("function" !== typeof oCbk) oCbk = function(){};
+	this.loadCallbackStack.push(oCbk);
 	if(this.img !== false)
 		while(this.loadCallbackStack.length) 
 			this.loadCallbackStack.shift()();

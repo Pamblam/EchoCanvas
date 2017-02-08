@@ -6,7 +6,7 @@
     </head>
     <body>
 		<h1>Echo.js Test #3</h1>
-		<b>Simple man</b>
+		<b>Simple man</b><br>
 		
 		<canvas id="echo" style="background:lightblue; border:1px solid black; width:400px"></canvas>
 		<script src="../EchoCanvas.js"></script>
@@ -16,7 +16,10 @@
 		<script>
 			var echo = new EchoCanvas("echo", 525, 500);
 			
-			// Large chain
+			var ground = new EchoRectObject("ground",550,150,"green","green",1)
+				.move("y",410);
+			echo.addObject(ground);
+			
 			var head = new EchoRectObject("head",50,50,"yellow","black",1)
 				.setJoint("headNeck",25,40)
 				.move("x", 200).move("y", 150);
@@ -70,33 +73,163 @@
 			echo.render();
 			
 			var timeline = new EchoTimeline(echo)
+			
+				// First half second, knees bend, move down
 				.animate({
-					time: 1500,
+					time: 500,
 					starttime: 0,
 					id: "upperRightLeg",
 					rotate: 40,
 					direction: "ccw"
 				}).animate({
-					time: 1500,
+					time: 500,
 					starttime: 0,
 					id: "lowerRightLeg",
-					rotate: 30,
+					rotate: 80,
 					direction: "cw"
 				}).animate({
-					time: 1500,
+					time: 500,
+					starttime: 0,
+					id: "upperLeftLeg",
+					rotate: 40,
+					direction: "cw"
+				}).animate({
+					time: 500,
+					starttime: 0,
+					id: "lowerLeftLeg",
+					rotate: 80,
+					direction: "ccw"
+				}).animate({
+					time: 500,
+					id: "head",
+					moveDown: 30
+				})
+				
+				// next quarter second
+				.animate({
+					time: 250,
+					starttime: 500,
 					id: "upperRightLeg",
-					rotate: 30,
+					rotate: 40,
 					direction: "cw"
 				}).animate({
-					time: 1500,
+					time: 250,
+					starttime: 500,
 					id: "lowerRightLeg",
-					rotate: 30,
+					rotate: 80,
+					direction: "ccw"
+				}).animate({
+					time: 250,
+					starttime: 500,
+					id: "upperLeftLeg",
+					rotate: 40,
+					direction: "ccw"
+				}).animate({
+					time: 250,
+					starttime: 500,
+					id: "lowerLeftLeg",
+					rotate: 80,
 					direction: "cw"
+				}).animate({
+					time: 250,
+					starttime: 500,
+					id: "head",
+					moveUp: 75
+				}).animate({
+					time: 250,
+					starttime: 500,
+					id: "upperLeftArm",
+					rotate: 90,
+					direction: "cw"
+				}).animate({
+					time: 250,
+					starttime: 500,
+					id: "upperRightArm",
+					rotate: 90,
+					direction: "ccw"
+				})
+				
+				// Flap arms
+				.animate({
+					time: 250,
+					starttime: 750,
+					id: "head",
+					moveUp: 25
+				}).animate({
+					time: 100,
+					starttime: 750,
+					id: "upperLeftArm",
+					rotate: 90,
+					direction: "ccw"
+				}).animate({
+					time: 100,
+					starttime: 750,
+					id: "upperRightArm",
+					rotate: 90,
+					direction: "cw"
+				}).animate({
+					time: 100,
+					starttime: 850,
+					id: "upperLeftArm",
+					rotate: 90,
+					direction: "cw"
+				}).animate({
+					time: 100,
+					starttime: 850,
+					id: "upperRightArm",
+					rotate: 90,
+					direction: "ccw"
+				}).animate({
+					time: 100,
+					starttime: 950,
+					id: "upperLeftArm",
+					rotate: 90,
+					direction: "ccw"
+				}).animate({
+					time: 100,
+					starttime: 950,
+					id: "upperRightArm",
+					rotate: 90,
+					direction: "cw"
+				}).animate({
+					time: 100,
+					starttime: 1050,
+					id: "upperLeftArm",
+					rotate: 90,
+					direction: "cw"
+				}).animate({
+					time: 100,
+					starttime: 1050,
+					id: "upperRightArm",
+					rotate: 90,
+					direction: "ccw"
+				})
+				
+				//move back down
+				.animate({
+					time: 250,
+					starttime: 1150,
+					id: "upperLeftArm",
+					rotate: 80,
+					direction: "ccw"
+				}).animate({
+					time: 250,
+					starttime: 1150,
+					id: "upperRightArm",
+					rotate: 80,
+					direction: "cw"
+				}).animate({
+					time: 250,
+					starttime: 1150,
+					id: "head",
+					moveDown: 75
 				});
-						
+				
+				timeline.showFrame = true;
+				
+		
 				timeline.render(function(){
-					timeline.play();
-					echo.render();
+					timeline.repeat();
 				});
 				
 				

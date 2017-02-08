@@ -10,8 +10,7 @@
  * @param String borderWidth - (Optional) The width of the border
  * @param Number x - (Optional) The X Position of the element on the canvas
  * @param Number y - (Optional) The Y posisiton of the element n the canvas
- * 
- * @returns EchoCompoundObject
+ * @returns EchoRectObject
  */
 function EchoRectObject(id,w,h,fillColor,borderColor,borderWidth,x,y){
 	this.fillColor = fillColor;
@@ -40,7 +39,7 @@ function EchoRectObject(id,w,h,fillColor,borderColor,borderWidth,x,y){
 	rCanvas.parentNode.removeChild(rCanvas);
 	
 	EchoObject.apply(this, [id,uri,x,y,w,h]);
-	
+	this.eoType = "EchoRectObject";
 }
 
 EchoRectObject.prototype = Object.create(EchoObject.prototype);

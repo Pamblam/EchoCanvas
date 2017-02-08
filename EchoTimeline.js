@@ -9,9 +9,29 @@ function EchoTimeline(eCanvas){
 	this.totalMS = 0;
 	this.animationStack = [];
 	this.renderedFrames = [];
-	this.FPS = 10;
+	this.FPS = 30;
 }
 
+/**
+ * Repeat the animation
+ * @returns EchoTimeline - The current instance
+ */
+EchoTimeline.prototype.repeat = function(){
+	this.eCanvas.saveState("_rpt");
+	var _this = this;
+	(function p(){
+		_this.play(function(){
+			p();
+		});
+	})();
+	return this;
+};
+
+/**
+ * Add an animation to the project
+ * @param object options - animation options
+ * @returns EchoTimeline - The current index
+ */
 EchoTimeline.prototype.animate = function(options){
 	if(undefined === options.id) throw new Error("EchoTimeline.animate requires an id option");
 	if(undefined === options.time) options.time = 5000;
@@ -20,7 +40,13 @@ EchoTimeline.prototype.animate = function(options){
 	return this;
 };
 
-EchoTimeline.prototype.play = function(callback){
+/**
+ * Play the rendered frames
+ * @param function playCbk - Callback to execute when animation is complete
+ * @returns EchoTimeline - The current index
+ */
+EchoTimeline.prototype.play = function(playCbk){
+	if("function" !== typeof playCbk) playCbk = function(){};
 	var runTime = this.getTotalRuntime();
 	
 	// Total number of frames required
@@ -44,12 +70,17 @@ EchoTimeline.prototype.play = function(callback){
 			ctx.drawImage(_this.renderedFrames[frameindex], 0, 0);
 		}catch(e){
 			clearInterval(int);
-			callback();
+			playCbk();
 		}
 		canvasLocked = false;
 	}, frameTime);
+	return this;
 };
 
+/**
+ * Get the total runtime of the rendered animation
+ * @returns Number
+ */
 EchoTimeline.prototype.getTotalRuntime = function(){
 	var runTime = 0;
 	for(var i=this.animationStack.length; i--;){
@@ -59,7 +90,12 @@ EchoTimeline.prototype.getTotalRuntime = function(){
 	return runTime;
 };
 
-EchoTimeline.prototype.render = function(callback){
+/**
+ * Render each frame of the animation
+ * @param function renderCbk - Function to call after the render has completed
+ * @returns EchoTimeline
+ */
+EchoTimeline.prototype.render = function(renderCbk){
 	this.renderedFrames = [];
 	var runTime = this.getTotalRuntime();
 	
@@ -196,7 +232,7 @@ EchoTimeline.prototype.render = function(callback){
 		
 	})(0, function(){
 		rCanvas.parentNode.removeChild(rCanvas);
-		callback();
+		renderCbk();
 	});
 	return this;
 };

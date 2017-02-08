@@ -14,21 +14,95 @@ function EchoCanvas(canvasID,w,h){
 	this.canvas.width = this.width;
 	this.canvas.height = this.height;
 	this.children = [];
+	this.states = {};
 }
+
+/**
+ * Save the current state of the canvas
+ * @param string stateID - namespace for the current state
+ * @returns EchoCanvas - The current instance
+ */
+EchoCanvas.prototype.saveState = function(stateID){
+	this.states[stateID] = {
+		width: this.width,
+		height: this.height,
+		children: []
+	};
+	this.states[stateID].children = JSON.parse(JSON.stringify(this.children, 
+		["id","x","y","width","height","uri","joints","children","rotation",
+		"eoType","fillColor","borderColor","borderWidth","anchor"]));
+	return this;
+};
+
+/**
+ * Get the object representation of the requested state
+ * @param string stateID - The ID of the state to retreive
+ * @returns object - The requested state
+ */
+EchoCanvas.prototype.getState = function(stateID){
+	return this.states[stateID];
+};
+
+/**
+ * Revert to a prior state
+ * @param string stateID - The ID of the state to revert to
+ * @returns EchoCanvas - The current instance
+ */
+EchoCanvas.prototype.setState = function(stateID){
+	this.loadState(this.states[stateID]);
+	return this;
+};
+
+/**
+ * Load a state from an object
+ * @param object state - an object representing a canvas state
+ * @returns EchoCanvas - The current instance
+ */
+EchoCanvas.prototype.loadState = function(state){
+	this.width = this.width;
+	this.height = this.height;
+	this.children = (function loadChildren(children){
+		if(!children.length) return children;
+		var ch = [];
+		for(var i=0; i<children.length; i++)(function(child){
+			var c;
+			switch(child.eoType){
+				case "EchoRectObject":
+					c = EchoRectObject(child.id,child.width,child.height,
+						child.fillColor,child.borderColor,child.borderWidth,
+						child.x,child.y);
+					break;
+				case "EchoObject":
+					c = new EchoObject(child.id,child.uri,child.x,child.y,
+						child.width,child.height);
+					break;
+				default: throw new Error("Invalid object type");
+			}
+			c.rotation = child.rotation;
+			c.joints = child.joints;
+			c.children = loadChildren(child.children);
+			for(var n=0; n<c.children.length; n++) c.children[n].parent = c;
+			ch.push(c);
+		})(children[i]);
+		return ch;
+	})(state.children);
+	for(var n=0; n<this.children.length; n++) this.children[n].parent = this;
+	return this;
+};
 
 /**
  * Get the element with the given id
  * @param String id - ID of an object on the canvas
- * @param Function callback - The function to be called when object is found or not
+ * @param Function goCbk - The function to be called when object is found or not
  * @returns EchoCanvas - Thecurrent instance
  */
-EchoCanvas.prototype.getObjectById = function(id, callback){
+EchoCanvas.prototype.getObjectById = function(id, goCbk){
 	var object = false;
 	this.recurseObjects(function(obj,done){
 		if(obj.id === id) object = obj;
 		done();
 	},function(){
-		callback(object);
+		goCbk(object);
 	});
 	return this;
 };
@@ -46,11 +120,11 @@ EchoCanvas.prototype.addObject = function(obj){
 
 /**
  * Draw each object on the canvas
- * @param Function callback - Function to call when render has completed
+ * @param Function renderCallback - Function to call when render has completed
  * @returns EchoCanvas - The current instance
  */
-EchoCanvas.prototype.render = function(callback, canvas){	
-	var ctx = (canvas || this.canvas).getContext('2d');
+EchoCanvas.prototype.render = function(renderCallback, canvas){	
+	var ctx = (undefined === canvas ? this.canvas : canvas).getContext('2d');
 	ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	this.recurseObjects(function(obj,done){
 		obj.onload(function(){
@@ -62,7 +136,7 @@ EchoCanvas.prototype.render = function(callback, canvas){
 			ctx.restore(); 
 			done();
 		});
-	}, callback);
+	}, renderCallback);
 	return this;
 };
 
@@ -150,23 +224,23 @@ EchoCanvas.prototype.showBorders = function(){
 /**
  * Recurse through all objects on the canvas
  * @param Funtion funct - The function to be called on each object, it is passed 
- *		the object and a function to be called when recursion may continue
- * @param Function callback - (Optional) A function to be called when the recursion is complete
+ *		the object and a function to be called when recursion may continue 
+ * @param Function roCbk - (Optional) A function to be called when the recursion is complete
  * @returns EchoCanvas - The current instance
  */
-EchoCanvas.prototype.recurseObjects = function(funct, callback){
+EchoCanvas.prototype.recurseObjects = function(funct, roCbk){
 	if("function" !== typeof funct) funct = function(){};
-	if("function" !== typeof callback) callback = function(){};
-	(function recurse(objs, index, callback){
+	if("function" !== typeof roCbk) roCbk = function(){};
+	(function recurse(objs, index, rCbk){
 		if(objs[index] === undefined){
-			callback();
+			rCbk();
 			return;
 		}
 		funct(objs[index], function(){
 			recurse(objs[index].children,0,function(){
-				recurse(objs, index+1, callback);
+				recurse(objs, index+1, rCbk);
 			});
 		});		
-	})(this.children, 0, callback);
+	})(this.children, 0, roCbk);
 	return this;
 };
