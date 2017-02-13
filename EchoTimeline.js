@@ -10,7 +10,29 @@ function EchoTimeline(eCanvas){
 	this.animationStack = [];
 	this.renderedFrames = [];
 	this.FPS = 30;
+	this.editCursor = 0;
 }
+
+/**
+ * Compare Animations
+ * @param Object startState - The state to begin with
+ * @param {type} endState - The state to end with
+ * @returns EchoTimeline - The current instance
+ */
+EchoTimeline.prototype.statesToAnimation = function(startState, endState){
+	var startmap = this.eCanvas.mapState(startState);
+	var endmap = this.eCanvas.mapState(endState);
+	var animations = [];
+	for(var id in startmap){
+		if(!startmap.hasOwnProperty(id) || !endmap.hasOwnProperty(id)) continue;
+		if(startmap[id].x > endmap[id].x) animations.push({id:id, moveLeft: startmap[id].x - endmap[id].x, starttime:this.editCursor});
+		if(startmap[id].x < endmap[id].x) animations.push({id:id, moveRight: endmap[id].x - startmap[id].x, starttime:this.editCursor});
+		if(startmap[id].y > endmap[id].y) animations.push({id:id, moveUp: startmap[id].y - endmap[id].y, starttime:this.editCursor});
+		if(startmap[id].y < endmap[id].y) animations.push({id:id, moveDown: endmap[id].y - startmap[id].y, starttime:this.editCursor});
+	}
+	for(var i=0; i<animations.length; i++) this.animate(animations[i]);
+	return this;
+};
 
 /**
  * Repeat the animation
@@ -35,7 +57,8 @@ EchoTimeline.prototype.repeat = function(){
 EchoTimeline.prototype.animate = function(options){
 	if(undefined === options.id) throw new Error("EchoTimeline.animate requires an id option");
 	if(undefined === options.time) options.time = 5000;
-	if(undefined === options.starttime) options.starttime = 0;
+	if(undefined === options.starttime) options.starttime = this.editCursor;
+	if(options.time+options.starttime > this.editCursor) this.editCursor = options.time+options.starttime;
 	this.animationStack.push(options);
 	return this;
 };

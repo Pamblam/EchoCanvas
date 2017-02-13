@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Echo Test</title>
+		<style>
+			#echo{
+				background:lightblue; border:1px solid black; width:100%;
+			}
+		</style>
+    </head>
+    <body>
+		<center>
+			<h1>Echo.js Test #5</h1>
+			<b>Editor</b>
+		</center>
+		
+		<div style="width:70%; margin:0 auto; border:1px solid black;">
+			<div style="width:400px; display:inline-block; padding:10px;"><canvas id="echo"></canvas></div>
+			<div style="width:auto; display:inline-block; padding:10px; vertical-align:top">
+				<div>Mouse at: <span id="coords">0, 0</span></div>
+				<hr>
+				
+				<label>Mouse Action: 
+					<select id="mouseaction">
+						<option value="">None</option>
+						<option value="move">Click and drag</option>
+					</select>
+				</label>
+				<hr>
+				
+					<button id="recordFrame" style="display:none;">Animate</button>
+					<button id="play" style="display:none;">Render & Play</button>
+				<hr>
+				
+				<button id="addimage">Add Image</button>
+				
+			</div>
+		</div>
+	
+		<script src="../EchoCanvas.js"></script>
+		<script src="../EchoObject.js"></script>
+		<script src="../EchoTimeline.js"></script>
+		<script src="../EchoMouse.js"></script>
+		
+		<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+		<script>
+			var animationStartState;
+			var echo = new EchoCanvas("echo", 525, 500);
+			var mouse = new EchoMouse(echo);
+			var timeline = new EchoTimeline(echo);
+			
+			mouse.onMove(function(e){
+				var pos = mouse.getPos(e);
+				$("#coords").html(pos.x+", "+pos.y);
+			});
+			
+			// play button
+			$(document).on("click", "#play", function(){
+				$("#play").html("Rendering");
+				echo.setState("animationStartState");
+				echo.render(function(){
+					timeline.render(function(){
+						$("#play").html("Play");
+						timeline.play(function(){
+							echo.render();
+						});
+					});
+				});
+			});
+			
+			// recording checkbox
+			$(document).on("click", "#recordFrame", function(){
+				$("#addimage").hide();
+				if(undefined === animationStartState){
+					echo.saveState("animationStartState");
+					echo.saveState("StartState");
+					animationStartState = 1;
+					$(this).html("Record Frame");
+					return;
+				}
+				$("#play").show();
+				echo.saveState("EndState");
+				var startState = echo.getState("StartState");
+				var endState = echo.getState("EndState");
+				
+				timeline.statesToAnimation(startState,endState);
+				echo.states["StartState"] = endState;
+			});
+			
+			// mouse action select
+			$(document).on("change", "#mouseaction", function(){
+				mouse.setMouseMode($(this).val());
+			});
+			
+			// add image button
+			$(document).on("click", "#addimage", function(){
+				$("#recordFrame").show();
+				echo.getUniqueId(function(newID){
+					echo.addObject(new EchoObject(newID,"chain.png",echo.width/2-100,echo.height/2-100)).render();
+				});
+			});
+		</script>
+    </body>
+</html>

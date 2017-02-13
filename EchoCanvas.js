@@ -15,6 +15,7 @@ function EchoCanvas(canvasID,w,h){
 	this.canvas.height = this.height;
 	this.children = [];
 	this.states = {};
+	this.rendering = false;
 }
 
 /**
@@ -54,17 +55,37 @@ EchoCanvas.prototype.setState = function(stateID){
 };
 
 /**
- * Load a state from an object
- * @param object state - an object representing a canvas state
+ * Remove an object and pass it into teh callback 
+ * @param String id - The ID of the object to remove
+ * @param Function callback - Callbackto be called after object is removed
  * @returns EchoCanvas - The current instance
  */
-EchoCanvas.prototype.loadState = function(state){
-	this.width = this.width;
-	this.height = this.height;
+EchoCanvas.prototype.removeObjectById = function(id, callback){
+	var _this = this;
+	this.getObjectById(id, function(obj){
+		if(obj === false) return callback(false);
+		_this.saveState("Removing_"+obj.id);
+		_this.loadState(_this.states["Removing_"+obj.id], [obj.id]);
+		callback(obj);
+	});
+	return this;
+};
+
+/**
+ * Load a state from an object
+ * @param object state - an object representing a canvas state
+ * @param except - An array of object IDs to omit while loading
+ * @returns EchoCanvas - The current instance
+ */
+EchoCanvas.prototype.loadState = function(state, except){
+	if(typeof except !== "object" || !Array.isArray(except)) except = [];
+	this.width = state.width;
+	this.height = state.height;
 	this.children = (function loadChildren(children){
 		if(!children.length) return children;
 		var ch = [];
 		for(var i=0; i<children.length; i++)(function(child){
+			if(except.indexOf(child.id) > -1) return;
 			var c;
 			switch(child.eoType){
 				case "EchoRectObject":
@@ -88,6 +109,28 @@ EchoCanvas.prototype.loadState = function(state){
 	})(state.children);
 	for(var n=0; n<this.children.length; n++) this.children[n].parent = this;
 	return this;
+};
+
+/**
+ * Get a flat object containing info about all objects
+ * @param Object state - A State object
+ * @param Array except - Array of objects sto skip
+ * @returns Object - A flat object containing info about all objects on the canvas
+ */
+EchoCanvas.prototype.mapState = function(state, except){
+	if(typeof except !== "object" || !Array.isArray(except)) except = [];
+	var map = {};
+	(function mapChildren(children){
+		if(!children.length) return;
+		var ch = [];
+		for(var i=0; i<children.length; i++)(function(child){
+			if(except.indexOf(child.id) > -1) return;
+			map[child.id] = child;
+			mapChildren(child.children);
+		})(children[i]);
+		return ch;
+	})(state.children);
+	return map;
 };
 
 /**
@@ -124,6 +167,11 @@ EchoCanvas.prototype.addObject = function(obj){
  * @returns EchoCanvas - The current instance
  */
 EchoCanvas.prototype.render = function(renderCallback, canvas){	
+	if("function" !== typeof renderCallback) renderCallback = function(){};
+	if(this.rendering) return renderCallback();
+	this.rendering = true;
+	var _this = this;
+	var cb = function(){ _this.rendering=false; renderCallback(); };
 	var ctx = (undefined === canvas ? this.canvas : canvas).getContext('2d');
 	ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	this.recurseObjects(function(obj,done){
@@ -136,7 +184,7 @@ EchoCanvas.prototype.render = function(renderCallback, canvas){
 			ctx.restore(); 
 			done();
 		});
-	}, renderCallback);
+	}, cb);
 	return this;
 };
 
@@ -195,6 +243,26 @@ EchoCanvas.prototype.showSkeleton = function(){
 };
 
 /**
+ * Get the object that is at the given coordinates
+ * @param Number x - The x ordinate
+ * @param Number y - The y ordinate
+ * @returns {undefined}
+ */
+EchoCanvas.prototype.getObjectAt = function(x, y, callback){
+	var retObj = false;
+	this.recurseObjects(function(obj, done){
+		obj.onload(function(){
+			var betweenH = x > obj.x && x < obj.x+obj.width;
+			var betweenV = y > obj.y && y < obj.y+obj.height;
+			if(betweenH && betweenV) retObj = obj;
+			done();
+		});
+	}, function(){
+		callback(retObj);
+	});
+};
+
+/**
  * Show each objects boundary
  * @returns EchoCanvas - The current instance
  */
@@ -242,5 +310,32 @@ EchoCanvas.prototype.recurseObjects = function(funct, roCbk){
 			});
 		});		
 	})(this.children, 0, roCbk);
+	return this;
+};
+
+/**
+ * Get a unique ID to use for an object
+ * @param String|Function idOrCallback - Either an ID to check against or the 
+ *		function to be called when the ID is checked/generated
+ * @param Function callback - Only used if an ID is passeed as the first paramter,
+ *		the callback function to be called when the unique ID is generated
+ * @returns EchoCanvas - The current instance
+ */
+EchoCanvas.prototype.getUniqueId = function(idOrCallback, callback){
+	var id = "string" === typeof idOrCallback ? idOrCallback : "eo_";
+	var cb = "function" === typeof idOrCallback ? idOrCallback : function(){};
+	if(typeof callback === "function") cb = callback;
+	var ids = [];
+	this.recurseObjects(function(obj, done){
+		ids.push(obj.id);
+		done();
+	},function(){
+		var uid = id, counter = 0;
+		while(ids.indexOf(uid) > -1){
+			uid = id+counter;
+			counter++;
+		}
+		cb(uid);
+	});
 	return this;
 };
