@@ -40,6 +40,7 @@ function EchoMouse(echoCanvas){
 				_this.activeObject.y = pos.y-_this.mouseImageOffset.y;
 				_this.hoverECanvas.render();
 				break;
+			case "SETJOINT": break;
 		}
 	});
 	this.onDown(function(e){
@@ -96,6 +97,7 @@ function EchoMouse(echoCanvas){
 					});
 				});
 				break;
+			case "SETJOINT": break;
 		}
 	});
 	this.onUp(function(e){
@@ -112,6 +114,15 @@ function EchoMouse(echoCanvas){
 					_this.activeObject = false;
 					_this.mouseImageOffset = {x:0,y:0};
 					_this.hoverECanvas = false;
+				});
+				break;
+			case "SETJOINT": 
+				_this.eCanvas.getObjectAt(pos.x, pos.y, function(obj){
+					if(obj === false) return;
+					_this.activeObject = obj;
+					var jid = obj.id+"_EMjoint"+obj.joints.length;
+					obj.setJoint(jid, pos.x, pos.y);
+					_this.eCanvas.render();
 				});
 				break;
 		}

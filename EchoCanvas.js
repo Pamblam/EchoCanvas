@@ -16,6 +16,9 @@ function EchoCanvas(canvasID,w,h){
 	this.children = [];
 	this.states = {};
 	this.rendering = false;
+	this.borders = false;
+	this.joints = false;
+	this.skeleton = false;
 }
 
 /**
@@ -171,7 +174,29 @@ EchoCanvas.prototype.render = function(renderCallback, canvas){
 	if(this.rendering) return renderCallback();
 	this.rendering = true;
 	var _this = this;
-	var cb = function(){ _this.rendering=false; renderCallback(); };
+	var b=false, j=false, s=false;
+	var cb = function(){ 
+		if(_this.borders && !b){
+			_this.showBorders(function(){
+				b=true; cb();
+			});
+			return;
+		}
+		if(_this.joints && !j){
+			_this.showJoints(function(){
+				j=true; cb();
+			});
+			return;
+		}
+		if(_this.skeleton && !s){
+			_this.showSkeleton(function(){
+				s=true; cb();
+			});
+			return;
+		}
+		_this.rendering=false; 
+		renderCallback(); 
+	};
 	var ctx = (undefined === canvas ? this.canvas : canvas).getContext('2d');
 	ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	this.recurseObjects(function(obj,done){
@@ -192,7 +217,7 @@ EchoCanvas.prototype.render = function(renderCallback, canvas){
  * Show the joints on the canvas
  * @returns EchoCanvas - The current instance
  */
-EchoCanvas.prototype.showJoints = function(){
+EchoCanvas.prototype.showJoints = function(cb){
 	var ctx = this.canvas.getContext('2d');
 	this.recurseObjects(function(obj,done){
 		obj.onload(function(){
@@ -210,7 +235,7 @@ EchoCanvas.prototype.showJoints = function(){
 			}
 			done();
 		});
-	});
+	}, cb);
 	return this;
 };
 
@@ -218,7 +243,7 @@ EchoCanvas.prototype.showJoints = function(){
  * Show skelton on the canvas
  * @returns EchoCanvas - The current instance
  */
-EchoCanvas.prototype.showSkeleton = function(){
+EchoCanvas.prototype.showSkeleton = function(cb){
 	var ctx = this.canvas.getContext('2d');
 	this.recurseObjects(function(obj,done){
 		obj.onload(function(){
@@ -238,7 +263,7 @@ EchoCanvas.prototype.showSkeleton = function(){
 			}
 			done();
 		});
-	});
+	},cb);
 	return this;
 };
 
@@ -266,7 +291,7 @@ EchoCanvas.prototype.getObjectAt = function(x, y, callback){
  * Show each objects boundary
  * @returns EchoCanvas - The current instance
  */
-EchoCanvas.prototype.showBorders = function(){
+EchoCanvas.prototype.showBorders = function(cb){
 	var ctx = this.canvas.getContext('2d');
 	this.recurseObjects(function(obj,done){
 		obj.onload(function(){
@@ -285,7 +310,7 @@ EchoCanvas.prototype.showBorders = function(){
 			ctx.stroke();
 			done();
 		});
-	});
+	}, cb);
 	return this;
 };
 

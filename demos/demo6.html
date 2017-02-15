@@ -25,8 +25,14 @@
 					<select id="mouseaction">
 						<option value="">None</option>
 						<option value="move">Click and drag</option>
+						<option value="setjoint">Set joint</option>
 					</select>
 				</label>
+				<hr>
+				
+				<label>Show Frame: <input type="checkbox" id="showFrame" /></label>
+				<label>Show Joints <input type="checkbox" id="showJoints" /></label>
+				<label>Show Skeleton <input type="checkbox" id="showSkeleton" /></label>
 				<hr>
 				
 					<button id="recordFrame" style="display:none;">Animate</button>
@@ -36,10 +42,12 @@
 				<button id="addimage">Add Image</button>
 				
 			</div>
+			<canvas id="tl" style="width:100%"></canvas>
 		</div>
 	
 		<script src="../EchoCanvas.js"></script>
 		<script src="../EchoObject.js"></script>
+		<script src="../EchoAnimation.js"></script>
 		<script src="../EchoTimeline.js"></script>
 		<script src="../EchoMouse.js"></script>
 		
@@ -48,21 +56,43 @@
 			var animationStartState;
 			var echo = new EchoCanvas("echo", 525, 500);
 			var mouse = new EchoMouse(echo);
-			var timeline = new EchoTimeline(echo);
+			var animation = new EchoAnimation(echo);
+			var timeline = new EchoTimeline("tl",animation);
+			
+			animation.onCursorMove(function(){
+				timeline.render();
+			});
 			
 			mouse.onMove(function(e){
 				var pos = mouse.getPos(e);
 				$("#coords").html(pos.x+", "+pos.y);
 			});
 			
+			// show frame 
+			$("#showFrame").change(function(){
+				echo.borders = $(this).is(":checked");
+				echo.render();
+			});
+			
+			$("#showJoints").change(function(){
+				echo.joints = $(this).is(":checked");
+				echo.render();
+			});
+			
+			$("#showSkeleton").change(function(){
+				echo.skeleton = $(this).is(":checked");
+				echo.render();
+			});
+			
 			// play button
 			$(document).on("click", "#play", function(){
 				$("#play").html("Rendering");
 				echo.setState("animationStartState");
+				timeline.render();
 				echo.render(function(){
-					timeline.render(function(){
+					animation.render(function(){
 						$("#play").html("Play");
-						timeline.play(function(){
+						animation.play(function(){
 							echo.render();
 						});
 					});
@@ -84,8 +114,9 @@
 				var startState = echo.getState("StartState");
 				var endState = echo.getState("EndState");
 				
-				timeline.statesToAnimation(startState,endState);
+				animation.statesToAnimation(startState,endState);
 				echo.states["StartState"] = endState;
+				timeline.render();
 			});
 			
 			// mouse action select

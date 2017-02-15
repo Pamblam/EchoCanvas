@@ -12,7 +12,7 @@
 		<canvas id="echo" style="background:lightblue; border:1px solid black; width:400px"></canvas>
 		<script src="../EchoCanvas.js"></script>
 		<script src="../EchoObject.js"></script>
-		<script src="../EchoTimeline.js"></script>
+		<script src="../EchoAnimation.js"></script>
 		<script>
 			var echo = new EchoCanvas("echo", 525, 500);
 			
@@ -41,7 +41,7 @@
 			// show the first frame while animation is processed and rendered
 			echo.render();
 			
-			var timeline = new EchoTimeline(echo)
+			var animation = new EchoAnimation(echo)
 				.animate({
 					id: "chain0",
 					moveLeft: 30
@@ -79,10 +79,10 @@
 			document.getElementById('show').onclick = function(){
 				var orig = document.getElementById('show').innerHTML;
 				document.getElementById('show').innerHTML = "Rendering...";
-				timeline.render(function(){
+				animation.render(function(){
 					document.getElementById('show').innerHTML = orig;
 					var time = new Date().getTime();
-					timeline.play(function(){
+					animation.play(function(){
 						console.log("Run time:", (new Date().getTime()-time)/1000, "seconds");
 						echo.render();
 					});
