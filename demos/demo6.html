@@ -20,12 +20,15 @@
 			<div style="width:auto; display:inline-block; padding:10px; vertical-align:top">
 				<div>Mouse at: <span id="coords">0, 0</span></div>
 				<hr>
+				<div>Cursor at: <input id='icursor' type="number" value="0" min="0" max="0" />&nbsp;/&nbsp;<span id='t'>0ms</span></div>
+				<hr>
 				
 				<label>Mouse Action: 
 					<select id="mouseaction">
 						<option value="">None</option>
-						<option value="move">Click and drag</option>
+						<option value="move">Move objects</option>
 						<option value="setjoint">Set joint</option>
+						<option value="snapjoints">Connect joints</option>
 					</select>
 				</label>
 				<hr>
@@ -61,6 +64,18 @@
 			
 			animation.onCursorMove(function(){
 				timeline.render();
+				var t = animation.getTotalRuntime();
+				$("#icursor")
+					.attr("max",t)
+					.val(animation.cursor);
+				$("#t").text(t+"ms");
+			});
+			
+			$("#icursor").change(function(){
+				animation.renderFrameAt($(this).val(), function(){
+					echo.render();
+					timeline.render();
+				});
 			});
 			
 			mouse.onMove(function(e){

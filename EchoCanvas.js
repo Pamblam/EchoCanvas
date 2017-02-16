@@ -103,7 +103,11 @@ EchoCanvas.prototype.loadState = function(state, except){
 				default: throw new Error("Invalid object type");
 			}
 			c.rotation = child.rotation;
-			c.joints = child.joints;
+			
+			var corners = (c.id+(['TopLeft','TopRight','BottomLeft','BottomRight'].join(","+c.id))).split(",");
+			c.joints = child.joints.filter(function(val){
+				return corners.indexOf(val.id) === -1;
+			});
 			c.children = loadChildren(child.children);
 			for(var n=0; n<c.children.length; n++) c.children[n].parent = c;
 			ch.push(c);
@@ -179,19 +183,19 @@ EchoCanvas.prototype.render = function(renderCallback, canvas){
 		if(_this.borders && !b){
 			_this.showBorders(function(){
 				b=true; cb();
-			});
+			}, canvas);
 			return;
 		}
 		if(_this.joints && !j){
 			_this.showJoints(function(){
 				j=true; cb();
-			});
+			}, canvas);
 			return;
 		}
 		if(_this.skeleton && !s){
 			_this.showSkeleton(function(){
 				s=true; cb();
-			});
+			}, canvas);
 			return;
 		}
 		_this.rendering=false; 
@@ -217,13 +221,13 @@ EchoCanvas.prototype.render = function(renderCallback, canvas){
  * Show the joints on the canvas
  * @returns EchoCanvas - The current instance
  */
-EchoCanvas.prototype.showJoints = function(cb){
-	var ctx = this.canvas.getContext('2d');
+EchoCanvas.prototype.showJoints = function(cb, canvas){
+	var ctx = (undefined === canvas ? this.canvas : canvas).getContext('2d');
 	this.recurseObjects(function(obj,done){
 		obj.onload(function(){
 			var corners = (obj.id+(['TopLeft','TopRight','BottomLeft','BottomRight'].join(","+obj.id))).split(",");
 			for(var i=0; i<obj.joints.length; i++){
-				if(corners.indexOf(obj.joints[i].id) > -1) continue;
+				//if(corners.indexOf(obj.joints[i].id) > -1) continue;
 				var centerX = obj.joints[i].x;
 				var centerY = obj.joints[i].y;
 				var radius = 3;
@@ -243,8 +247,8 @@ EchoCanvas.prototype.showJoints = function(cb){
  * Show skelton on the canvas
  * @returns EchoCanvas - The current instance
  */
-EchoCanvas.prototype.showSkeleton = function(cb){
-	var ctx = this.canvas.getContext('2d');
+EchoCanvas.prototype.showSkeleton = function(cb, canvas){
+	var ctx = (undefined === canvas ? this.canvas : canvas).getContext('2d');
 	this.recurseObjects(function(obj,done){
 		obj.onload(function(){
 			var corners = (obj.id+(['TopLeft','TopRight','BottomLeft','BottomRight'].join(","+obj.id))).split(",");
@@ -291,8 +295,8 @@ EchoCanvas.prototype.getObjectAt = function(x, y, callback){
  * Show each objects boundary
  * @returns EchoCanvas - The current instance
  */
-EchoCanvas.prototype.showBorders = function(cb){
-	var ctx = this.canvas.getContext('2d');
+EchoCanvas.prototype.showBorders = function(cb, canvas){
+	var ctx = (undefined === canvas ? this.canvas : canvas).getContext('2d');
 	this.recurseObjects(function(obj,done){
 		obj.onload(function(){
 			ctx.beginPath();

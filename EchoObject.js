@@ -117,6 +117,12 @@ EchoObject.prototype.setJoint = function(id,x,y){
 	return this;
 };
 
+EchoObject.prototype.removeAnchor = function(){
+	for(var i=this.joints.length; i--;) 
+		this.joints[i].anchor = false;
+	return this;
+};
+
 /**
  * Set a joint that is anchored to another joint
  * @param String - Object unique Joint ID
@@ -125,8 +131,7 @@ EchoObject.prototype.setJoint = function(id,x,y){
  */
 EchoObject.prototype.setAnchor = function(id,anchorID){
 	// Only one anchor allowed per object
-	for(var i=this.joints.length; i--;) 
-		this.joints[i].anchor = false;
+	this.removeAnchor();
 	var index = this.getJointIndexById(id);
 	var x,y;
 	if(false !== index){

@@ -166,106 +166,8 @@ EchoAnimation.prototype.render = function(renderCbk){
 			done();
 			return;
 		}
-		_this.moveCursor(time);
-		(function recurseAnimationStack(asIndex, asDone){
-			if(undefined === _this.animationStack[asIndex]){
-				asDone();
-				return;
-			}
-			var animation = _this.animationStack[asIndex];
-			
-			var started = animation.starttime <= time;
-			var finishTime = animation.starttime+animation.time;
-			var finished = finishTime < time;
-			
-			if(!started || finished){
-				recurseAnimationStack(asIndex+1, asDone);
-				return;
-			}
-			
-			var aniArray = [];
-			if(animation.moveLeft !== undefined) 
-				aniArray.push({type:"moveLeft", ani: animation});
-			if(animation.moveRight !== undefined) 
-				aniArray.push({type:"moveRight", ani: animation});
-			if(animation.moveUp !== undefined) 
-				aniArray.push({type:"moveUp", ani: animation});
-			if(animation.moveDown !== undefined) 
-				aniArray.push({type:"moveDown", ani: animation});
-			if(animation.rotate !== undefined) 
-				aniArray.push({type:"rotateChildren", ani: animation});
-			if(animation.rotateChildren !== undefined) 
-				aniArray.push({type:"rotateChildren", ani: animation});
-			
-			// recurse thru each animation that applies to the current frame
-			(function recurseAnimations(aIndex, aDone){
-				if(undefined === aniArray[aIndex]){
-					aDone();
-					return;
-				}
-				
-				var a = aniArray[aIndex];
-				
-				// Total number of frames required for THIS ANIMATION
-				var aniRunTimeSeconds = a.ani.time/1000;
-				var framesPerAnimation = _this.FPS*aniRunTimeSeconds;
-				
-				_this.eCanvas.getObjectById(a.ani.id, function(obj){
-					if(false === obj){
-						recurseAnimations(aIndex+1, aDone);
-						return;
-					}
-					
-					// do transformations
-					switch(a.type){
-						case "moveLeft":
-							var pixelsToMove = a.ani.moveLeft/framesPerAnimation;
-							obj.move("x", -(pixelsToMove));
-							recurseAnimations(aIndex+1, aDone);
-							return;
-							break;
-						case "moveRight":
-							var pixelsToMove = a.ani.moveRight/framesPerAnimation;
-							obj.move("x", pixelsToMove);
-							recurseAnimations(aIndex+1, aDone);
-							return;
-							break;
-						case "moveUp":
-							var pixelsToMove = a.ani.moveUp/framesPerAnimation;
-							obj.move("y", -(pixelsToMove));
-							recurseAnimations(aIndex+1, aDone);
-							return;
-							break;
-						case "moveDown":
-							var pixelsToMove = a.ani.moveDown/framesPerAnimation;
-							obj.move("y", pixelsToMove);
-							recurseAnimations(aIndex+1, aDone);
-							return;
-							break;
-						case "rotate":
-							var degreesToMove = a.ani.rotate/framesPerAnimation;
-							if(a.ani.direction === "ccw") degreesToMove = -(degreesToMove);
-							obj.rotate(degreesToMove, function(){
-								recurseAnimations(aIndex+1, aDone);
-							});
-							return;
-							break;
-						case "rotateChildren":
-							var degreesToMove = a.ani.rotate/framesPerAnimation;
-							if(a.ani.direction === "ccw") degreesToMove = -(degreesToMove);
-							obj.rotateChildren(degreesToMove, function(){
-								recurseAnimations(aIndex+1, aDone);
-							});
-							return;
-							break;
-					}
-				});
-				
-			})(0, function(){
-				recurseAnimationStack(asIndex+1,asDone);
-			});
-			
-		})(0, function(){
+		
+		_this.renderFrameAt(time, function(){
 			// draw the frame 
 			_this.eCanvas.render(function(){
 				var img = new Image();
@@ -283,6 +185,111 @@ EchoAnimation.prototype.render = function(renderCbk){
 		renderCbk();
 	});
 	return this;
+};
+
+EchoAnimation.prototype.renderFrameAt = function(time, rtlaCb){
+	if(typeof rtlaCb !== "function") rtlaCb = function(){};
+	var _this = this;
+	_this.moveCursor(time);
+	(function recurseAnimationStack(asIndex, asDone){
+		if(undefined === _this.animationStack[asIndex]){
+			asDone();
+			return;
+		}
+		var animation = _this.animationStack[asIndex];
+
+		var started = animation.starttime <= time;
+		var finishTime = animation.starttime+animation.time;
+		var finished = finishTime < time;
+
+		if(!started || finished){
+			recurseAnimationStack(asIndex+1, asDone);
+			return;
+		}
+
+		var aniArray = [];
+		if(animation.moveLeft !== undefined) 
+			aniArray.push({type:"moveLeft", ani: animation});
+		if(animation.moveRight !== undefined) 
+			aniArray.push({type:"moveRight", ani: animation});
+		if(animation.moveUp !== undefined) 
+			aniArray.push({type:"moveUp", ani: animation});
+		if(animation.moveDown !== undefined) 
+			aniArray.push({type:"moveDown", ani: animation});
+		if(animation.rotate !== undefined) 
+			aniArray.push({type:"rotateChildren", ani: animation});
+		if(animation.rotateChildren !== undefined) 
+			aniArray.push({type:"rotateChildren", ani: animation});
+
+		// recurse thru each animation that applies to the current frame
+		(function recurseAnimations(aIndex, aDone){
+			if(undefined === aniArray[aIndex]){
+				aDone();
+				return;
+			}
+
+			var a = aniArray[aIndex];
+
+			// Total number of frames required for THIS ANIMATION
+			var aniRunTimeSeconds = a.ani.time/1000;
+			var framesPerAnimation = _this.FPS*aniRunTimeSeconds;
+
+			_this.eCanvas.getObjectById(a.ani.id, function(obj){
+				if(false === obj){
+					recurseAnimations(aIndex+1, aDone);
+					return;
+				}
+
+				// do transformations
+				switch(a.type){
+					case "moveLeft":
+						var pixelsToMove = a.ani.moveLeft/framesPerAnimation;
+						obj.move("x", -(pixelsToMove));
+						recurseAnimations(aIndex+1, aDone);
+						return;
+						break;
+					case "moveRight":
+						var pixelsToMove = a.ani.moveRight/framesPerAnimation;
+						obj.move("x", pixelsToMove);
+						recurseAnimations(aIndex+1, aDone);
+						return;
+						break;
+					case "moveUp":
+						var pixelsToMove = a.ani.moveUp/framesPerAnimation;
+						obj.move("y", -(pixelsToMove));
+						recurseAnimations(aIndex+1, aDone);
+						return;
+						break;
+					case "moveDown":
+						var pixelsToMove = a.ani.moveDown/framesPerAnimation;
+						obj.move("y", pixelsToMove);
+						recurseAnimations(aIndex+1, aDone);
+						return;
+						break;
+					case "rotate":
+						var degreesToMove = a.ani.rotate/framesPerAnimation;
+						if(a.ani.direction === "ccw") degreesToMove = -(degreesToMove);
+						obj.rotate(degreesToMove, function(){
+							recurseAnimations(aIndex+1, aDone);
+						});
+						return;
+						break;
+					case "rotateChildren":
+						var degreesToMove = a.ani.rotate/framesPerAnimation;
+						if(a.ani.direction === "ccw") degreesToMove = -(degreesToMove);
+						obj.rotateChildren(degreesToMove, function(){
+							recurseAnimations(aIndex+1, aDone);
+						});
+						return;
+						break;
+				}
+			});
+
+		})(0, function(){
+			recurseAnimationStack(asIndex+1,asDone);
+		});
+
+	})(0, rtlaCb);
 };
 
 EchoAnimation.prototype.getStack = function(){
