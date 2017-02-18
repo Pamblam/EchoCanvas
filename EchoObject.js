@@ -1,13 +1,13 @@
 
 /**
  * Create an object to be drawn to canvas
- * @param String id - Canvas Unique Object ID
- * @param String uri - The URI of the image to draw
- * @param Number x - (Optional) The X Position of the element on the canvas
- * @param Number y - (Optional) The Y posisiton of the element n the canvas
- * @param Number w - (Optional) The width of the image to draw
- * @param Number h - (Optional) The height of the image to draw
- * @returns EchoObject
+ * @param {String} id - Canvas Unique Object ID
+ * @param {String} uri - The URI of the image to draw
+ * @param {Number} x - (Optional) The X Position of the element on the canvas
+ * @param {Number} y - (Optional) The Y posisiton of the element n the canvas
+ * @param {Number} w - (Optional) The width of the image to draw
+ * @param {Number} h - (Optional) The height of the image to draw
+ * @returns {EchoObject}
  */
 function EchoObject(id,uri,x,y,w,h){
 	this.id = id;
@@ -46,9 +46,9 @@ function EchoObject(id,uri,x,y,w,h){
 
 /**
  * Rotate the object and all it's children
- * @param Number degrees - Degrees to rotate
- * @param Function rcCbk - A function to call when rotation is complete
- * @returns EchoObject - The current EchoObject instance
+ * @param {Number} degrees - Degrees to rotate
+ * @param {Function} rcCbk - A function to call when rotation is complete
+ * @returns {EchoObject} - The current EchoObject instance
  */
 EchoObject.prototype.rotateChildren = function(degrees, rcCbk){
 	if("function" !== typeof rcCbk) rcCbk = function(){};
@@ -61,9 +61,9 @@ EchoObject.prototype.rotateChildren = function(degrees, rcCbk){
 
 /**
  * Rotate the object
- * @param Number degrees - Degrees to rotate
- * @param Function rotateCallback - A function to call when rotation is complete
- * @returns EchoObject - The current EchoObject instance
+ * @param {Number} degrees - Degrees to rotate
+ * @param {Function} rotateCallback - A function to call when rotation is complete
+ * @returns {EchoObject} - The current EchoObject instance
  */
 EchoObject.prototype.rotate = function(degrees, rotateCallback){
 	if("function" !== typeof rotateCallback) rotateCallback = function(){};
@@ -92,8 +92,8 @@ EchoObject.prototype.rotate = function(degrees, rotateCallback){
 
 /**
  * Register a function to be called when the object loads
- * @param function oCbk - A function to call when the object loads
- * @returns EchoObject - The current EchoObject instance
+ * @param {Function} oCbk - A function to call when the object loads
+ * @returns {EchoObject} - The current EchoObject instance
  */
 EchoObject.prototype.onload = function(oCbk){
 	if("function" !== typeof oCbk) oCbk = function(){};
@@ -106,10 +106,10 @@ EchoObject.prototype.onload = function(oCbk){
 
 /**
  * Set an existing or new joint
- * @param String - Object unique Joint ID
- * @param Number x - The X position on the canvas to initiate the joint 
- * @param Number y - The Y position on the canvas to initiate the joint
- * @returns EchoObject - The current EchoObject instance
+ * @param {String} - Object unique Joint ID
+ * @param {Number} x - The X position on the canvas to initiate the joint 
+ * @param {Number} y - The Y position on the canvas to initiate the joint
+ * @returns {EchoObject} - The current EchoObject instance
  */
 EchoObject.prototype.setJoint = function(id,x,y){
 	var index = this.getJointIndexById(id) || this.joints.length;
@@ -117,6 +117,10 @@ EchoObject.prototype.setJoint = function(id,x,y){
 	return this;
 };
 
+/**
+ * Remove the anchor from the object if it exists
+ * @returns {EchoObject} - The current instance
+ */
 EchoObject.prototype.removeAnchor = function(){
 	for(var i=this.joints.length; i--;) 
 		this.joints[i].anchor = false;
@@ -125,9 +129,9 @@ EchoObject.prototype.removeAnchor = function(){
 
 /**
  * Set a joint that is anchored to another joint
- * @param String - Object unique Joint ID
- * @param String anchorID - The ID of a joint on a parent object to anchor to
- * @returns EchoObject - The current EchoObject instance
+ * @param {String} - Object unique Joint ID
+ * @param {String} anchorID - The ID of a joint on a parent object to anchor to
+ * @returns {EchoObject} - The current EchoObject instance
  */
 EchoObject.prototype.setAnchor = function(id,anchorID){
 	// Only one anchor allowed per object
@@ -147,8 +151,8 @@ EchoObject.prototype.setAnchor = function(id,anchorID){
 
 /**
  * Add a child object
- * @param EchoObject object
- * @returns EchoObject - The current EchoObject instance
+ * @param {EchoObject} object
+ * @returns {EchoObject} - The current EchoObject instance
  */
 EchoObject.prototype.appendChild = function(object){
 	object.parent = this;
@@ -159,7 +163,7 @@ EchoObject.prototype.appendChild = function(object){
 
 /**
  * Loop through child elements and align any that are anchored to this element
- * @returns EchoObject
+ * @returns {EchoObject} - The current instance
  */
 EchoObject.prototype.anchorChildren = function(){
 	var _this = this;
@@ -184,10 +188,10 @@ EchoObject.prototype.anchorChildren = function(){
 };
 
 /**
- * 
- * @param String axis - The axis to move along, either x or y
- * @param Number distance - How far to move
- * @returns EchoObject - Thecurrent instance
+ * Move an object on the canvas
+ * @param {String} axis - The axis to move along, either x or y
+ * @param {Number} distance - How far to move
+ * @returns {EchoObject} - Thecurrent instance
  */
 EchoObject.prototype.move = function(axis,distance){
 	this[axis] += distance;
@@ -200,8 +204,8 @@ EchoObject.prototype.move = function(axis,distance){
 
 /**
  * Get the index of a joint by it's Joint ID
- * @param String id - The Joint ID of the joint to get the index of
- * @returns Number|Boolean - The Index of the joint with the given index or FALSE
+ * @param {String} id - The Joint ID of the joint to get the index of
+ * @returns {Number|Boolean} - The Index of the joint with the given index or FALSE
  */
 EchoObject.prototype.getJointIndexById = function(id){
 	for(var i=this.joints.length; i--;) 

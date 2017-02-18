@@ -1,10 +1,10 @@
 
 /**
  * Create a new EchoCanvas
- * @param String canvasID - The id of the canvas to draw on
- * @param Number w - (Optional) Canvas width
- * @param Number h - (Optional) Canvas height
- * @returns EchoCanvas
+ * @param {String} canvasID - The id of the canvas to draw on
+ * @param {Number} w - (Optional) Canvas width
+ * @param {Number} h - (Optional) Canvas height
+ * @returns {EchoCanvas}
  */
 function EchoCanvas(canvasID,w,h){
 	this.canvasID = canvasID;
@@ -23,8 +23,8 @@ function EchoCanvas(canvasID,w,h){
 
 /**
  * Save the current state of the canvas
- * @param string stateID - namespace for the current state
- * @returns EchoCanvas - The current instance
+ * @param {String} stateID - namespace for the current state
+ * @returns {EchoCanvas} - The current instance
  */
 EchoCanvas.prototype.saveState = function(stateID){
 	this.states[stateID] = {
@@ -40,8 +40,8 @@ EchoCanvas.prototype.saveState = function(stateID){
 
 /**
  * Get the object representation of the requested state
- * @param string stateID - The ID of the state to retreive
- * @returns object - The requested state
+ * @param {String} stateID - The ID of the state to retreive
+ * @returns {Object} - The requested state
  */
 EchoCanvas.prototype.getState = function(stateID){
 	return this.states[stateID];
@@ -49,8 +49,8 @@ EchoCanvas.prototype.getState = function(stateID){
 
 /**
  * Revert to a prior state
- * @param string stateID - The ID of the state to revert to
- * @returns EchoCanvas - The current instance
+ * @param {String} stateID - The ID of the state to revert to
+ * @returns {EchoCanvas} - The current instance
  */
 EchoCanvas.prototype.setState = function(stateID){
 	this.loadState(this.states[stateID]);
@@ -59,9 +59,9 @@ EchoCanvas.prototype.setState = function(stateID){
 
 /**
  * Remove an object and pass it into teh callback 
- * @param String id - The ID of the object to remove
- * @param Function callback - Callbackto be called after object is removed
- * @returns EchoCanvas - The current instance
+ * @param {String} id - The ID of the object to remove
+ * @param {Function} callback - Callbackto be called after object is removed
+ * @returns {EchoCanvas} - The current instance
  */
 EchoCanvas.prototype.removeObjectById = function(id, callback){
 	var _this = this;
@@ -76,9 +76,9 @@ EchoCanvas.prototype.removeObjectById = function(id, callback){
 
 /**
  * Load a state from an object
- * @param object state - an object representing a canvas state
- * @param except - An array of object IDs to omit while loading
- * @returns EchoCanvas - The current instance
+ * @param {Object} state - an object representing a canvas state
+ * @param {Array} except - An array of object IDs to omit while loading
+ * @returns {EchoCanvas} - The current instance
  */
 EchoCanvas.prototype.loadState = function(state, except){
 	if(typeof except !== "object" || !Array.isArray(except)) except = [];
@@ -120,9 +120,9 @@ EchoCanvas.prototype.loadState = function(state, except){
 
 /**
  * Get a flat object containing info about all objects
- * @param Object state - A State object
- * @param Array except - Array of objects sto skip
- * @returns Object - A flat object containing info about all objects on the canvas
+ * @param {Object} state - A State object
+ * @param {Array} except - Array of objects sto skip
+ * @returns {Object} - A flat object containing info about all objects on the canvas
  */
 EchoCanvas.prototype.mapState = function(state, except){
 	if(typeof except !== "object" || !Array.isArray(except)) except = [];
@@ -142,9 +142,9 @@ EchoCanvas.prototype.mapState = function(state, except){
 
 /**
  * Get the element with the given id
- * @param String id - ID of an object on the canvas
- * @param Function goCbk - The function to be called when object is found or not
- * @returns EchoCanvas - Thecurrent instance
+ * @param {String} id - ID of an object on the canvas
+ * @param {Function} goCbk - The function to be called when object is found or not
+ * @returns {EchoCanvas} - Thecurrent instance
  */
 EchoCanvas.prototype.getObjectById = function(id, goCbk){
 	var object = false;
@@ -159,8 +159,8 @@ EchoCanvas.prototype.getObjectById = function(id, goCbk){
 
 /**
  * Add an object to the canvas
- * @param EchoObject obj - The object to add to the canvas
- * @returns EchoCanvas - The current instance
+ * @param {EchoObject} obj - The object to add to the canvas
+ * @returns {EchoCanvas} - The current instance
  */
 EchoCanvas.prototype.addObject = function(obj){
 	obj.parent = this;
@@ -170,8 +170,8 @@ EchoCanvas.prototype.addObject = function(obj){
 
 /**
  * Draw each object on the canvas
- * @param Function renderCallback - Function to call when render has completed
- * @returns EchoCanvas - The current instance
+ * @param {Function} renderCallback - Function to call when render has completed
+ * @returns {EchoCanvas} - The current instance
  */
 EchoCanvas.prototype.render = function(renderCallback, canvas){	
 	if("function" !== typeof renderCallback) renderCallback = function(){};
@@ -219,7 +219,9 @@ EchoCanvas.prototype.render = function(renderCallback, canvas){
 
 /**
  * Show the joints on the canvas
- * @returns EchoCanvas - The current instance
+ * @param {Function} cb - Function to be called when the joints have been displayed
+ * @param {HTMLEle} canvas - (Optional) The canvas to render the joints on
+ * @returns {EchoCanvas} - The current instance
  */
 EchoCanvas.prototype.showJoints = function(cb, canvas){
 	var ctx = (undefined === canvas ? this.canvas : canvas).getContext('2d');
@@ -227,7 +229,7 @@ EchoCanvas.prototype.showJoints = function(cb, canvas){
 		obj.onload(function(){
 			var corners = (obj.id+(['TopLeft','TopRight','BottomLeft','BottomRight'].join(","+obj.id))).split(",");
 			for(var i=0; i<obj.joints.length; i++){
-				//if(corners.indexOf(obj.joints[i].id) > -1) continue;
+				if(corners.indexOf(obj.joints[i].id) > -1) continue;
 				var centerX = obj.joints[i].x;
 				var centerY = obj.joints[i].y;
 				var radius = 3;
@@ -245,7 +247,9 @@ EchoCanvas.prototype.showJoints = function(cb, canvas){
 
 /**
  * Show skelton on the canvas
- * @returns EchoCanvas - The current instance
+ * @param {Function} cb - Function to be called when the skeleton has been displayed
+ * @param {HTMLEle} canvas - (Optional) The canvas to render the skeleton on
+ * @returns {EchoCanvas} - The current instance
  */
 EchoCanvas.prototype.showSkeleton = function(cb, canvas){
 	var ctx = (undefined === canvas ? this.canvas : canvas).getContext('2d');
@@ -273,8 +277,10 @@ EchoCanvas.prototype.showSkeleton = function(cb, canvas){
 
 /**
  * Get the object that is at the given coordinates
- * @param Number x - The x ordinate
- * @param Number y - The y ordinate
+ * @param {Number} x - The x ordinate
+ * @param {Number} y - The y ordinate
+ * @param {Function}  callback- - A function to be called when the object is found
+ *		This function is passed one parameter - The object found, or false
  * @returns {undefined}
  */
 EchoCanvas.prototype.getObjectAt = function(x, y, callback){
@@ -292,8 +298,10 @@ EchoCanvas.prototype.getObjectAt = function(x, y, callback){
 };
 
 /**
- * Show each objects boundary
- * @returns EchoCanvas - The current instance
+ * Show each object's boundary
+ * @param {Function} cb - Function to be called when the borders have been displayed
+ * @param {HTMLEle} canvas - (Optional) The canvas to render the skeleton on
+ * @returns {EchoCanvas} - The current instance
  */
 EchoCanvas.prototype.showBorders = function(cb, canvas){
 	var ctx = (undefined === canvas ? this.canvas : canvas).getContext('2d');
@@ -320,10 +328,10 @@ EchoCanvas.prototype.showBorders = function(cb, canvas){
 
 /**
  * Recurse through all objects on the canvas
- * @param Funtion funct - The function to be called on each object, it is passed 
+ * @param {Funtion} funct - The function to be called on each object, it is passed 
  *		the object and a function to be called when recursion may continue 
- * @param Function roCbk - (Optional) A function to be called when the recursion is complete
- * @returns EchoCanvas - The current instance
+ * @param {Function} roCbk - (Optional) A function to be called when the recursion is complete
+ * @returns {EchoCanvas} - The current instance
  */
 EchoCanvas.prototype.recurseObjects = function(funct, roCbk){
 	if("function" !== typeof funct) funct = function(){};
@@ -344,11 +352,11 @@ EchoCanvas.prototype.recurseObjects = function(funct, roCbk){
 
 /**
  * Get a unique ID to use for an object
- * @param String|Function idOrCallback - Either an ID to check against or the 
+ * @param {String|Function} idOrCallback - Either an ID to check against or the 
  *		function to be called when the ID is checked/generated
- * @param Function callback - Only used if an ID is passeed as the first paramter,
+ * @param {Function} callback - Only used if an ID is passeed as the first paramter,
  *		the callback function to be called when the unique ID is generated
- * @returns EchoCanvas - The current instance
+ * @returns {EchoCanvas} - The current instance
  */
 EchoCanvas.prototype.getUniqueId = function(idOrCallback, callback){
 	var id = "string" === typeof idOrCallback ? idOrCallback : "eo_";

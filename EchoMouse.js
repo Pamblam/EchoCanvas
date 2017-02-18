@@ -1,8 +1,8 @@
 
 /**
  * This class manages mouse events on the canvas
- * @param EchoCanvas echoCanvas
- * @returns EchoMouse
+ * @param {EchoCanvas} echoCanvas
+ * @returns {EchoMouse}
  */
 function EchoMouse(echoCanvas){
 	this.eCanvas = echoCanvas;
@@ -298,8 +298,8 @@ function EchoMouse(echoCanvas){
 /**
  * Set the mouse mode:
  *		"move" for click and drag
- * @param String mode - The mode to set the mose to
- * @returns EchoMouse - The current instance
+ * @param {String} mode - The mode to set the mose to
+ * @returns {EchoMouse} - The current instance
  */
 EchoMouse.prototype.setMouseMode = function(mode){
 	this.mode = mode.toUpperCase();
@@ -308,8 +308,8 @@ EchoMouse.prototype.setMouseMode = function(mode){
 
 /**
  * Add a callback to be called when the mouse is mved on the canvas
- * @param Function omcb - A function to be called
- * @returns EchoMouse - The current instance
+ * @param {Function} omcb - A function to be called
+ * @returns {EchoMouse} - The current instance
  */
 EchoMouse.prototype.onMove = function(omcb){
 	this.mouseMoveStack.push(omcb);
@@ -318,8 +318,8 @@ EchoMouse.prototype.onMove = function(omcb){
 
 /**
  * Add a callback to be called when the mouse button is pressed
- * @param Function omcb - A function to be called
- * @returns EchoMouse - The current instance
+ * @param {Function} omcb - A function to be called
+ * @returns {EchoMouse} - The current instance
  */
 EchoMouse.prototype.onDown = function(omcb){
 	this.mouseDownStack.push(omcb);
@@ -328,8 +328,8 @@ EchoMouse.prototype.onDown = function(omcb){
 
 /**
  * Add a callback to be called when the mouse button is released
- * @param Function omcb - A function to be called
- * @returns EchoMouse - The current instance
+ * @param {Function} omcb - A function to be called
+ * @returns {EchoMouse} - The current instance
  */
 EchoMouse.prototype.onUp = function(omcb){
 	this.mouseUpStack.push(omcb);
@@ -338,10 +338,11 @@ EchoMouse.prototype.onUp = function(omcb){
 
 /**
  * Helper function to bind an event
- * @param DOMElement el
- * @param String ev
- * @param Funtion fn
- * @returns undefined
+ * @param {DOMElement} el - An HTML element to bind an event to
+ * @param {String} ev - The type of event to bind (minus the "on")
+ * @param {Funtion} fn - The function to be calledwhen the event is fired
+ *		This function is passed the Event object.
+ * @returns {EchoMouse} - The current instance
  */
 EchoMouse.prototype.bind = function(el, ev, fn){
 	if(window.addEventListener){ // modern browsers including IE9+
@@ -351,13 +352,14 @@ EchoMouse.prototype.bind = function(el, ev, fn){
 	} else {
 		el['on' + ev] = fn;
 	}
+	return this;
 };
 
 /**
  * Helper function to get the mouse position on the canvas
  * http://stackoverflow.com/a/10450761/1444609
- * @param Event evt
- * @returns Object - Object with x & y coords
+ * @param {Event} evt - Theevent that is passed to the callback function
+ * @returns {Object} - Object with x & y coords
  */
 EchoMouse.prototype.getPos = function(evt) {
 	var rect = this.eCanvas.canvas.getBoundingClientRect();

@@ -1,5 +1,11 @@
 
-
+/**
+ * Create a visual timeline on a separate canvas
+ * @param {String} canvasID - The ID of the canvas to render the object on
+ * @param {EchoAnimation} eAnimation - The EchoAnimation instance for which to draw the timeline
+ * @param {Number} w - (Optional) The with of the timeline in pixels
+ * @returns {EchoTimeline}
+ */
 function EchoTimeline(canvasID,eAnimation,w){
 	this.canvasID = canvasID;
 	this.canvas = document.getElementById(canvasID);
@@ -12,6 +18,10 @@ function EchoTimeline(canvasID,eAnimation,w){
 	this.eAnimation = eAnimation;
 }
 
+/**
+ * Draw the timeline on the canvas
+ * @returns {EchoTimeline} - The current instance
+ */
 EchoTimeline.prototype.render = function(){
 	
 	var stack = this.eAnimation.getStack();
@@ -117,4 +127,5 @@ EchoTimeline.prototype.render = function(){
 		ctx.fillRect(0,0,x,maxy);
 		ctx.restore();
 	}
+	return this;
 };

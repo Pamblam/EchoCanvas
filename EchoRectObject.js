@@ -1,16 +1,16 @@
 
 /**
- * Create an object composed of multiple EchoObjects
- * @extends EchoObject
- * @param String id - Canvas Unique Object ID
- * @param Number w - (Optional) The width of the image to draw
- * @param Number h - (Optional) The height of the image to draw
- * @param String fillColor - (Optional) Color to fill the canvas
- * @param String borderColor - (Optional) Color to draw the border
- * @param String borderWidth - (Optional) The width of the border
- * @param Number x - (Optional) The X Position of the element on the canvas
- * @param Number y - (Optional) The Y posisiton of the element n the canvas
- * @returns EchoRectObject
+ * Create an object object that is a simple rectangle
+ * @extends {EchoObject}
+ * @param {String} id - Canvas Unique Object ID
+ * @param {Number} w - (Optional) The width of the image to draw
+ * @param {Number} h - (Optional) The height of the image to draw
+ * @param {String} fillColor - (Optional) Color to fill the canvas
+ * @param {String} borderColor - (Optional) Color to draw the border
+ * @param {String} borderWidth - (Optional) The width of the border
+ * @param {Number} x - (Optional) The X Position of the element on the canvas
+ * @param {Number} y - (Optional) The Y posisiton of the element n the canvas
+ * @returns {EchoRectObject}
  */
 function EchoRectObject(id,w,h,fillColor,borderColor,borderWidth,x,y){
 	this.fillColor = fillColor;

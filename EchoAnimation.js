@@ -1,8 +1,8 @@
 
 /**
  * Create an animation timeline
- * @param EchoCanvas eCanvas - The EchoCanvas instance to animate
- * @returns EchoAnimation
+ * @param {EchoCanvas} eCanvas - The EchoCanvas instance to animate
+ * @returns {EchoAnimation}
  */
 function EchoAnimation(eCanvas){
 	this.eCanvas = eCanvas;
@@ -17,9 +17,9 @@ function EchoAnimation(eCanvas){
 
 /**
  * Compare Animations
- * @param Object startState - The state to begin with
- * @param {type} endState - The state to end with
- * @returns EchoAnimation - The current instance
+ * @param {Object} startState - The state to begin with
+ * @param {Object} endState - The state to end with
+ * @returns {EchoAnimation} - The current instance
  */
 EchoAnimation.prototype.statesToAnimation = function(startState, endState){
 	var startmap = this.eCanvas.mapState(startState);
@@ -38,7 +38,7 @@ EchoAnimation.prototype.statesToAnimation = function(startState, endState){
 
 /**
  * Repeat the animation
- * @returns EchoAnimation - The current instance
+ * @returns {EchoAnimation} - The current instance
  */
 EchoAnimation.prototype.repeat = function(){
 	this.eCanvas.saveState("_rpt");
@@ -51,22 +51,34 @@ EchoAnimation.prototype.repeat = function(){
 	return this;
 };
 
+/**
+ * Register a function that will be called every time the cursor is moved
+ * @param {Function} funct - A function to be called when the cursor is moved
+ * @returns {EchoAnimation} - The current instace
+ */
 EchoAnimation.prototype.onCursorMove = function(funct){
 	this.cursorMoveStack.push(funct);
+	return this;
 };
 
+/**
+ * Move the cursor along the timeline
+ * @param {Number} time - The time in miliseconds to move the cursor to
+ * @returns {EchoAnimation} - The current index
+ */
 EchoAnimation.prototype.moveCursor = function(time){
 	var total = this.getTotalRuntime();
 	if(time > total) time = total;
 	this.cursor = time;
 	for(var i =0; i<this.cursorMoveStack.length; i++) 
 		this.cursorMoveStack[i]();
+	return this;
 };
 
 /**
  * Add an animation to the project
- * @param object options - animation options
- * @returns EchoAnimation - The current index
+ * @param {Object} options - animation options
+ * @returns {EchoAnimation} - The current index
  */
 EchoAnimation.prototype.animate = function(options){
 	if(undefined === options.id) throw new Error("EchoAnimation.animate requires an id option");
@@ -79,8 +91,8 @@ EchoAnimation.prototype.animate = function(options){
 
 /**
  * Play the rendered frames
- * @param function playCbk - Callback to execute when animation is complete
- * @returns EchoAnimation - The current index
+ * @param {Function} playCbk - Callback to execute when animation is complete
+ * @returns {EchoAnimation} - The current index
  */
 EchoAnimation.prototype.play = function(playCbk){
 	if("function" !== typeof playCbk) playCbk = function(){};
@@ -123,7 +135,7 @@ EchoAnimation.prototype.play = function(playCbk){
 
 /**
  * Get the total runtime of the rendered animation
- * @returns Number
+ * @returns {Number} - The total runtime in milliseconds
  */
 EchoAnimation.prototype.getTotalRuntime = function(){
 	var runTime = 0;
@@ -136,7 +148,7 @@ EchoAnimation.prototype.getTotalRuntime = function(){
 
 /**
  * Render each frame of the animation
- * @param function renderCbk - Function to call after the render has completed
+ * @param {Function} renderCbk - Function to call after the render has completed
  * @returns EchoAnimation
  */
 EchoAnimation.prototype.render = function(renderCbk){
@@ -187,6 +199,12 @@ EchoAnimation.prototype.render = function(renderCbk){
 	return this;
 };
 
+/**
+ * Render a frame of the animation at the given timeline
+ * @param {Number} time - The time on the timeline to render
+ * @param {Function} rtlaCb - (Oprional) A function to be called when the frame  is rendered
+ * @returns {EchoAnimation} - The current instance
+ */
 EchoAnimation.prototype.renderFrameAt = function(time, rtlaCb){
 	if(typeof rtlaCb !== "function") rtlaCb = function(){};
 	var _this = this;
@@ -290,8 +308,13 @@ EchoAnimation.prototype.renderFrameAt = function(time, rtlaCb){
 		});
 
 	})(0, rtlaCb);
+	return this;
 };
 
+/**
+ * Get the animation stack, sorted by starttime
+ * @returns {Array} - The animation stack
+ */
 EchoAnimation.prototype.getStack = function(){
 	this.animationStack.sort(function(a, b){
 		if (a.starttime < b.starttime) return -1;
