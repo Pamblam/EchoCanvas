@@ -16,7 +16,7 @@ function EchoAnimation(eCanvas){
 }
 
 /**
- * Compare Animations
+ * Animate timeline from two states
  * @param {Object} startState - The state to begin with
  * @param {Object} endState - The state to end with
  * @returns {EchoAnimation} - The current instance
@@ -32,6 +32,7 @@ EchoAnimation.prototype.statesToAnimation = function(startState, endState){
 		if(startmap[id].y > endmap[id].y) animations.push({id:id, moveUp: startmap[id].y - endmap[id].y, starttime:this.cursor});
 		if(startmap[id].y < endmap[id].y) animations.push({id:id, moveDown: endmap[id].y - startmap[id].y, starttime:this.cursor});
 	}
+	console.log(JSON.stringify(animations));
 	for(var i=0; i<animations.length; i++) this.animate(animations[i]);
 	return this;
 };
@@ -152,8 +153,11 @@ EchoAnimation.prototype.getTotalRuntime = function(){
  * @returns EchoAnimation
  */
 EchoAnimation.prototype.render = function(renderCbk){
+	console.log(this.eCanvas.children[0].joints);
+	if(undefined === renderCbk) renderCbk = function(){};
 	this.renderedFrames = [];
 	var runTime = this.getTotalRuntime();
+	this.eCanvas.saveState("_prerender");
 	this.state = "rendering";
 	
 	// Total number of frames required
@@ -172,13 +176,13 @@ EchoAnimation.prototype.render = function(renderCbk){
 	
 	this.moveCursor(0);
 	var _this = this;
+	
 	(function recurseFrames(time,done){
 		if(time >= runTime){
 			_this.moveCursor(runTime);
 			done();
 			return;
 		}
-		
 		_this.renderFrameAt(time, function(){
 			// draw the frame 
 			_this.eCanvas.render(function(){
@@ -192,8 +196,9 @@ EchoAnimation.prototype.render = function(renderCbk){
 		});
 		
 	})(0, function(){
-		this.state = "idle";
+		_this.state = "idle";
 		rCanvas.parentNode.removeChild(rCanvas);
+		_this.eCanvas.setState("_prerender");
 		renderCbk();
 	});
 	return this;
@@ -257,30 +262,33 @@ EchoAnimation.prototype.renderFrameAt = function(time, rtlaCb){
 					recurseAnimations(aIndex+1, aDone);
 					return;
 				}
-
 				// do transformations
 				switch(a.type){
 					case "moveLeft":
 						var pixelsToMove = a.ani.moveLeft/framesPerAnimation;
 						obj.move("x", -(pixelsToMove));
+						obj.anchorChildren();
 						recurseAnimations(aIndex+1, aDone);
 						return;
 						break;
 					case "moveRight":
 						var pixelsToMove = a.ani.moveRight/framesPerAnimation;
 						obj.move("x", pixelsToMove);
+						obj.anchorChildren();
 						recurseAnimations(aIndex+1, aDone);
 						return;
 						break;
 					case "moveUp":
 						var pixelsToMove = a.ani.moveUp/framesPerAnimation;
 						obj.move("y", -(pixelsToMove));
+						obj.anchorChildren();
 						recurseAnimations(aIndex+1, aDone);
 						return;
 						break;
 					case "moveDown":
 						var pixelsToMove = a.ani.moveDown/framesPerAnimation;
 						obj.move("y", pixelsToMove);
+						obj.anchorChildren();
 						recurseAnimations(aIndex+1, aDone);
 						return;
 						break;

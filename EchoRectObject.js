@@ -24,17 +24,18 @@ function EchoRectObject(id,w,h,fillColor,borderColor,borderWidth,x,y){
 	document.body.appendChild(rCanvas);
 	var ctx = rCanvas.getContext("2d");
 	
-	var rect = this.fillColor ? "fillRect" : "rect";
 	if(this.fillColor) ctx.fillStyle = this.fillColor;
 	if(this.borderColor) ctx.strokeStyle = this.borderColor;
 	if(this.borderWidth) ctx.lineWidth = this.borderWidth;
 	
-	if(this.borderWidth > 0){
-		w = w - (this.borderWidth*2);
-		h = h - (this.borderWidth*2);
-	}
+//	if(this.borderWidth > 0){
+//		w = w - (this.borderWidth*2);
+//		h = h - (this.borderWidth*2);
+//	}
+		
 	ctx.rect(0,0,w,h);
 	if(this.borderColor) ctx.stroke();
+	if(this.fillColor) ctx.fill();
 	var uri = rCanvas.toDataURL();
 	rCanvas.parentNode.removeChild(rCanvas);
 	

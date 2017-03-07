@@ -12,140 +12,67 @@
     <body>
 		<center>
 			<h1>Echo.js Test #6</h1>
-			<b>Editor</b>
+			<b>Moving joints</b>
 		</center>
 		
 		<div style="width:70%; margin:0 auto; border:1px solid black;">
-			<div style="width:400px; display:inline-block; padding:10px;"><canvas id="echo"></canvas></div>
-			<div style="width:auto; display:inline-block; padding:10px; vertical-align:top">
-				<div>Mouse at: <span id="coords">0, 0</span></div>
-				<hr>
-				<div>Cursor at: <input id='icursor' type="number" value="0" min="0" max="0" />&nbsp;/&nbsp;<span id='t'>0ms</span></div>
-				<hr>
-				
-				<label>Mouse Action: 
-					<select id="mouseaction">
-						<option value="">None</option>
-						<option value="move">Move objects</option>
-						<option value="setjoint">Set joint</option>
-						<option value="snapjoints">Connect joints</option>
-					</select>
-				</label>
-				<hr>
-				
-				<label>Show Frame: <input type="checkbox" id="showFrame" /></label>
-				<label>Show Joints <input type="checkbox" id="showJoints" /></label>
-				<label>Show Skeleton <input type="checkbox" id="showSkeleton" /></label>
-				<hr>
-				
-					<button id="recordFrame" style="display:none;">Animate</button>
-					<button id="play" style="display:none;">Render & Play</button>
-				<hr>
-				
-				<button id="addimage">Add Image</button>
-				
-			</div>
-			<canvas id="tl" style="width:100%"></canvas>
+			<center><div style="width:400px; display:inline-block; text-align:center; margin:0 auto;padding:10px;"><canvas id="echo"></canvas></div>
+			<hr>
+			<button id="renderc">Render Canvas</button>
+			<button id="rendera">Render Animation</button>
+			<button id="play">Play</button>
+			<hr>
+			<canvas id="tl" style="width:100%"></canvas></center>
 		</div>
 	
 		<script src="../EchoCanvas.js"></script>
 		<script src="../EchoObject.js"></script>
 		<script src="../EchoAnimation.js"></script>
-		<script src="../EchoTimeline.js"></script>
-		<script src="../EchoMouse.js"></script>
 		
 		<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
 		<script>
 			var animationStartState;
 			var echo = new EchoCanvas("echo", 525, 500);
-			var mouse = new EchoMouse(echo);
 			var animation = new EchoAnimation(echo);
-			var timeline = new EchoTimeline("tl",animation);
 			
-			animation.onCursorMove(function(){
-				timeline.render();
-				var t = animation.getTotalRuntime();
-				$("#icursor")
-					.attr("max",t)
-					.val(animation.cursor);
-				$("#t").text(t+"ms");
+			var startState = {"width":525,"height":500,"children":[{"id":"eo_","x":182.5,"y":9,"width":200,"height":200,"uri":"chain.png","joints":[{"id":"eo_TopLeft","x":182.5,"y":9,"anchor":false},{"id":"eo_TopRight","x":382.5,"y":9,"anchor":false},{"id":"eo_BottomRight","x":382.5,"y":209,"anchor":false},{"id":"eo_BottomLeft","x":182.5,"y":209,"anchor":false},{"id":"eo__EMjoint4","x":288,"y":110,"anchor":false}],"children":[],"rotation":0,"eoType":"EchoObject"}]};
+			var endState = {"width":525,"height":500,"children":[{"id":"eo_","x":163.5,"y":125,"width":200,"height":200,"uri":"chain.png","joints":[{"id":"eo_TopLeft","x":163.5,"y":125,"anchor":false},{"id":"eo_TopRight","x":363.5,"y":125,"anchor":false},{"id":"eo_BottomRight","x":363.5,"y":325,"anchor":false},{"id":"eo_BottomLeft","x":163.5,"y":325,"anchor":false},{"id":"eo__EMjoint4","x":269,"y":226,"anchor":false}],"children":[],"rotation":0,"eoType":"EchoObject"}]};
+			echo.loadState(startState);			
+			animation.animate({"id":"eo_","moveLeft":19,"starttime":0})
+					.animate({"id":"eo_","moveDown":116,"starttime":0});
+			echo.render();
+			
+			echo.joints = true;
+			
+			// render canvas button
+			$(document).on("click", "#renderc", function(){
+				$("#renderc").html("Rendering Canvas");
+				console.log(echo.children[0].joints[0].y);
+				echo.loadState(startState, undefined, function(){
+					console.log(echo.children[0].joints[0].y);
+					echo.render(function(){
+						$("#renderc").html("Canvas Rendered");
+					});
+				});				
 			});
 			
-			$("#icursor").change(function(){
-				animation.renderFrameAt($(this).val(), function(){
-					echo.render();
-					timeline.render();
+			// render animation button
+			$(document).on("click", "#rendera", function(){
+				$("#rendera").html("Rendering Animation");
+				animation.render(function(){
+					$("#rendera").html("Animation Rendered");
 				});
-			});
-			
-			mouse.onMove(function(e){
-				var pos = mouse.getPos(e);
-				$("#coords").html(pos.x+", "+pos.y);
-			});
-			
-			// show frame 
-			$("#showFrame").change(function(){
-				echo.borders = $(this).is(":checked");
-				echo.render();
-			});
-			
-			$("#showJoints").change(function(){
-				echo.joints = $(this).is(":checked");
-				echo.render();
-			});
-			
-			$("#showSkeleton").change(function(){
-				echo.skeleton = $(this).is(":checked");
-				echo.render();
 			});
 			
 			// play button
 			$(document).on("click", "#play", function(){
-				$("#play").html("Rendering");
-				echo.setState("animationStartState");
-				timeline.render();
-				echo.render(function(){
-					animation.render(function(){
-						$("#play").html("Play");
-						animation.play(function(){
-							echo.render();
-						});
-					});
+				$("#play").html("Playing");
+				animation.play(function(){
+					$("#play").html("Play");
+					echo.render();
 				});
 			});
 			
-			// recording checkbox
-			$(document).on("click", "#recordFrame", function(){
-				$("#addimage").hide();
-				if(undefined === animationStartState){
-					echo.saveState("animationStartState");
-					echo.saveState("StartState");
-					animationStartState = 1;
-					$(this).html("Record Frame");
-					return;
-				}
-				$("#play").show();
-				echo.saveState("EndState");
-				var startState = echo.getState("StartState");
-				var endState = echo.getState("EndState");
-				
-				animation.statesToAnimation(startState,endState);
-				echo.states["StartState"] = endState;
-				timeline.render();
-			});
-			
-			// mouse action select
-			$(document).on("change", "#mouseaction", function(){
-				mouse.setMouseMode($(this).val());
-			});
-			
-			// add image button
-			$(document).on("click", "#addimage", function(){
-				$("#recordFrame").show();
-				echo.getUniqueId(function(newID){
-					echo.addObject(new EchoObject(newID,"chain.png",echo.width/2-100,echo.height/2-100)).render();
-				});
-			});
 		</script>
     </body>
 </html>

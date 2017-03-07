@@ -21,6 +21,8 @@ function EchoCanvas(canvasID,w,h){
 	this.skeleton = false;
 }
 
+
+
 /**
  * Save the current state of the canvas
  * @param {String} stateID - namespace for the current state
@@ -80,10 +82,12 @@ EchoCanvas.prototype.removeObjectById = function(id, callback){
  * @param {Array} except - An array of object IDs to omit while loading
  * @returns {EchoCanvas} - The current instance
  */
-EchoCanvas.prototype.loadState = function(state, except){
+EchoCanvas.prototype.loadState = function(state, except, loadcb){
 	if(typeof except !== "object" || !Array.isArray(except)) except = [];
 	this.width = state.width;
 	this.height = state.height;
+	this.children = [];
+	var waiting = 0;
 	this.children = (function loadChildren(children){
 		if(!children.length) return children;
 		var ch = [];
@@ -105,11 +109,22 @@ EchoCanvas.prototype.loadState = function(state, except){
 			c.rotation = child.rotation;
 			
 			var corners = (c.id+(['TopLeft','TopRight','BottomLeft','BottomRight'].join(","+c.id))).split(",");
-			c.joints = child.joints.filter(function(val){
-				return corners.indexOf(val.id) === -1;
+			waiting++;
+			c.onload(function(){
+				console.log(child.joints[0]);
+				c.joints = child.joints.filter(function(val){
+					return corners.indexOf(val.id) === -1;
+				});
+				c.children = loadChildren(child.children);
+				for(var n=0; n<c.children.length; n++) c.children[n].parent = c;
+				waiting--;
+				setTimeout(function(){
+					if(!waiting && undefined !== loadcb){
+						loadcb();
+						loadcb = undefined;
+					}
+				},5);
 			});
-			c.children = loadChildren(child.children);
-			for(var n=0; n<c.children.length; n++) c.children[n].parent = c;
 			ch.push(c);
 		})(children[i]);
 		return ch;
@@ -204,6 +219,7 @@ EchoCanvas.prototype.render = function(renderCallback, canvas){
 	var ctx = (undefined === canvas ? this.canvas : canvas).getContext('2d');
 	ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	this.recurseObjects(function(obj,done){
+		if(!obj.onload) console.log(obj);
 		obj.onload(function(){
 			ctx.save(); 
 			var imageCenter = {x: obj.x+(obj.width/2), y: obj.y+(obj.height/2)};
