@@ -96,7 +96,7 @@ EchoCanvas.prototype.loadState = function(state, except, loadcb){
 			var c;
 			switch(child.eoType){
 				case "EchoRectObject":
-					c = EchoRectObject(child.id,child.width,child.height,
+					c = new EchoRectObject(child.id,child.width,child.height,
 						child.fillColor,child.borderColor,child.borderWidth,
 						child.x,child.y);
 					break;
@@ -111,7 +111,6 @@ EchoCanvas.prototype.loadState = function(state, except, loadcb){
 			var corners = (c.id+(['TopLeft','TopRight','BottomLeft','BottomRight'].join(","+c.id))).split(",");
 			waiting++;
 			c.onload(function(){
-				console.log(child.joints[0]);
 				c.joints = child.joints.filter(function(val){
 					return corners.indexOf(val.id) === -1;
 				});

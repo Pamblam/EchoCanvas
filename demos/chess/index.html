@@ -22,7 +22,7 @@
 			var black = true;
 			var x=0, y=0;
 			for(var i=0; i<v.length; i++){
-				for(var n=1; n<=8; n++){
+				for(var n=8; n>0; n--){
 					var id = v[i]+n;
 					var color = black ? "#000000" : "#FFFFFF";
 					squares[id] = new EchoRectObject(id, 50, 50, color, color, 1, x, y);
@@ -46,6 +46,7 @@
 				pieces[color][type].object.width = 50;
 				pieces[color][type].object.height = 50;
 				pieces[color][type].posit = ['a', 8];
+				pieces[color][type].color = color;
 				echo.addObject(pieces[color][type].object);
 			}
 			sprites.onload(function(){
