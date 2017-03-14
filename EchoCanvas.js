@@ -69,8 +69,17 @@ EchoCanvas.prototype.removeObjectById = function(id, callback){
 	var _this = this;
 	this.getObjectById(id, function(obj){
 		if(obj === false) return callback(false);
-		_this.saveState("Removing_"+obj.id);
-		_this.loadState(_this.states["Removing_"+obj.id], [obj.id]);
+		
+		var children = [];
+		var c = obj.parent.children.length;
+		for(var c=0; c<obj.parent.children.length; c++){
+			if(obj.parent.children[c].id === obj.id) continue;
+			else children.push(obj.parent.children[c]);
+		}
+		obj.parent.children = children;
+		
+//		_this.saveState("Removing_"+obj.id);
+//		_this.loadState(_this.states["Removing_"+obj.id], [obj.id]);
 		callback(obj);
 	});
 	return this;
@@ -218,7 +227,6 @@ EchoCanvas.prototype.render = function(renderCallback, canvas){
 	var ctx = (undefined === canvas ? this.canvas : canvas).getContext('2d');
 	ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	this.recurseObjects(function(obj,done){
-		if(!obj.onload) console.log(obj);
 		obj.onload(function(){
 			ctx.save(); 
 			var imageCenter = {x: obj.x+(obj.width/2), y: obj.y+(obj.height/2)};

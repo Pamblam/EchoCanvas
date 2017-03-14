@@ -3,6 +3,7 @@ function ChessGame(pieces){
 	this.turn = "Black";
 	this.selectedPiece = false;
 	this.captured = [];
+	this.moveInt = false;
 };
 
 ChessGame.prototype.iteratePieces = function(cb){
@@ -16,17 +17,28 @@ ChessGame.prototype.iteratePieces = function(cb){
 	return this;
 };
 
+ChessGame.prototype.stopAutoPlay = function(){
+	clearInterval(this.moveInt);
+	this.moveInt = false;
+};
+
+ChessGame.prototype.autoPlay = function(){
+	var _this = this;
+	this.moveInt = setInterval(function(){
+		_this.autoMove();
+	},1000);
+};
+
 ChessGame.prototype.autoMove = function(){
 	var moves = this.getAllMoves();
-	var max = 5;
-	if(!moves.length) console.log("Game over");
+	var max = 3;
+	if(!moves.length) console.log("Game over", this.selectedPiece.color,"Forfeits, no moves");
 	if(moves.length < max) max = moves.length-1;
 	var i = Math.floor(Math.random() * (max + 1));
 	var move = moves[i];
 	this.pickUp(move.piece.posit);
 	var _this = this;
 	setTimeout(function(){
-		console.log(move);
 		_this.move(move.move.posit);
 	}, 500);
 };
@@ -47,14 +59,14 @@ ChessGame.prototype.getAllMoves = function(){
 		if(allMoves[i].piece.class !== "Pawn") 
 			allMoves[i].rating += 1;
 		if(allMoves[i].move.capture){
-			allMoves[i].rating += 1;
+			allMoves[i].rating += 3;
 			var p = _this.getPieceAtPosit(allMoves[i].move.posit);
 			if(p.class !== "Pawn") 
 				allMoves[i].rating += 1;
 			if(p.class === "Queen") 
 				allMoves[i].rating += 3;
-			if(p.class === "King") 
-				allMoves[i].rating += 6;
+			if(p.class === "King")
+				allMoves[i].rating += 15;
 		}
 	}
 	allMoves.sort(function(a,b){
@@ -96,16 +108,16 @@ ChessGame.prototype.resetBoard = function(){
 ChessGame.prototype.positToCoords = function(posit){
 	var xmap = ["a","b","c","d","e","f","g","h"];
 	return [
-		xmap.indexOf(posit[0])*50,
+		(xmap.indexOf(posit[0])>-1?xmap.indexOf(posit[0]):posit[0])*50,
 		(8-posit[1])*50
 	];
 };
 
 ChessGame.prototype.move = function(posit, piece, render){
-	var _this = this;
+	var _this = this, moves;
 	(function(cb){
 		if(piece !== undefined) return cb();
-		var moves = _this.getMoves(_this.selectedPiece);
+		moves = _this.getMoves(_this.selectedPiece);
 		for(var i=moves.length; i--;)
 			if(moves[i].posit[0]===posit[0] && moves[i].posit[1]===posit[1])
 				return cb(moves[i]);
@@ -131,7 +143,21 @@ ChessGame.prototype.move = function(posit, piece, render){
 				piece.posit = posit;
 				if(remId){
 					echo.removeObjectById(remId, function(capPiece){
-						_this.captured.push(capPiece);
+						for(var color in _this.pieces){
+							if(!_this.pieces.hasOwnProperty(color)) continue;
+							for(var name in _this.pieces[color]){
+								if(!_this.pieces[color].hasOwnProperty(name)) continue;
+								if(capPiece.id === color+" "+name){
+									_this.captured.push(_this.pieces[color][name]);
+									if(_this.pieces[color][name].class==="King"){
+										console.log("Game Over, "+color+" Lost the King");
+										if(_this.moveInt) clearInterval(_this.moveInt);
+									}
+									delete _this.pieces[color][name];
+									break;
+								}
+							}
+						}
 						if(render) echo.render();
 					});
 				}else if(render) echo.render();
@@ -142,7 +168,6 @@ ChessGame.prototype.move = function(posit, piece, render){
 
 ChessGame.prototype.getMoves = function(piece){
 	var map = "abcdefgh".split("");
-	if(undefined === piece.posit) console.log(piece);
 	var x = map.indexOf(piece.posit[0]);
 	var y = piece.posit[1];
 	var moves = [];
