@@ -3,78 +3,33 @@
     <head>
         <meta charset="UTF-8">
         <title>Echo Test</title>
+		<link type="text/css" href="css/Terminal.css" rel="stylesheet" />
     </head>
     <body>
-		<h1>Echo.js Chess Game</h1>
-		<div style="width:430px;height:430px;padding:15px;background:url(bg.png);margin:0; background-repeat:no-repeat;"><canvas id="echo" style="border:1px solid black; width:400px"></canvas></div>
+		<center>
+			<h1>Code Chess</h1>
+			<table>
+				<tr>
+					<td>
+						<div style="width:430px;height:430px;padding:15px;background:url(imgs/bg.png);margin:0; background-repeat:no-repeat;"><canvas id="echo" style="border:1px solid black; width:400px"></canvas></div>
+					</td>
+					<td style="padding:15px; margin:0; vertical-align:top" valign="top">
+						<textarea id="terminal" style="width:400px;height:400px; margin:0; padding:1em; overflow-x:hidden; ">
+							       Welcome to Console Chess
+							Type HELP and press enter for instructions...
+						</textarea>
+					</td>
+				</tr>
+			</table>
+		</center>
 		<script src="../../EchoCanvas.js"></script>
 		<script src="../../EchoObject.js"></script>
 		<script src="../../EchoAnimation.js"></script>
 		<script src="../../EchoRectObject.js"></script>
 		<script src="../../EchoSpritesheet.js"></script>
-		<script src="ChessGame.js"></script>
-		<script>
-			var game;
-			var echo = new EchoCanvas("echo", 400, 400);
-			var squares = {};
-			
-			var v = "abcdefgh";
-			var black = true;
-			var x=0, y=0;
-			for(var i=0; i<v.length; i++){
-				for(var n=8; n>0; n--){
-					var id = v[i]+n;
-					var color = black ? "#000000" : "#FFFFFF";
-					squares[id] = new EchoRectObject(id, 50, 50, color, color, 1, x, y);
-					echo.addObject(squares[id]);
-					black = !black;
-					y+=50;
-				};
-				black = !black;
-				y=0;
-				x+=50;
-			};
-			
-			var sprites = new EchoSpritesheet("pieces.png");
-			var pieces = {White:{}, Black:{}}, x=0, y=0;
-			var color = "White";
-			var piece_types = ["King","Queen","Bishop","Knight","Castle","Pawn"];
-			function makeSprite(color, name, type, x, y, cls){
-				sprites.makeSprite(name, x, y, 65, 65);
-				pieces[color][type]={object: sprites.sprites[name]};
-				pieces[color][type].class = cls;
-				pieces[color][type].object.width = 50;
-				pieces[color][type].object.height = 50;
-				pieces[color][type].posit = ['a', 8];
-				pieces[color][type].color = color;
-				echo.addObject(pieces[color][type].object);
-			}
-			sprites.onload(function(){
-				for(var n=0; n<2; n++){
-					for(var i=0; i<6; i++){
-						var name = color+" "+piece_types[i];						
-						switch(piece_types[i]){
-							case "King": case "Queen":
-								makeSprite(color, name, piece_types[i], x, y, piece_types[i]);
-								break;
-							case "Bishop": case "Knight": case "Castle":
-								makeSprite(color, name+" 1", piece_types[i]+" 1", x, y, piece_types[i]);
-								makeSprite(color, name+" 2", piece_types[i]+" 2", x, y, piece_types[i]);
-								break;
-							case "Pawn":
-								for(var xx=1; xx<=8; xx++)
-									makeSprite(color, name+" "+xx, piece_types[i]+" "+xx, x, y, piece_types[i]);
-								break;
-						}
-						x += 65;
-					}
-					color = "Black";
-					y+=65; x=0;
-				}
-				game = new ChessGame(pieces);
-				game.resetBoard();
-				echo.render();
-			});			
-		</script>
+		<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+		<script src="js/Terminal.js"></script>
+		<script src="js/ChessGame.js"></script>
+		<script src="js/app.js"></script>
     </body>
 </html>

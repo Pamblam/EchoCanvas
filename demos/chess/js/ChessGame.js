@@ -4,6 +4,8 @@ function ChessGame(pieces){
 	this.selectedPiece = false;
 	this.captured = [];
 	this.moveInt = false;
+	this.moveHistory = [];
+	this.winner = false;
 };
 
 ChessGame.prototype.iteratePieces = function(cb){
@@ -30,11 +32,15 @@ ChessGame.prototype.autoPlay = function(){
 };
 
 ChessGame.prototype.autoMove = function(){
-	var moves = this.getAllMoves();
-	var max = 3;
-	if(!moves.length) console.log("Game over", this.selectedPiece.color,"Forfeits, no moves");
+	var moves = this.rankAllMoves();
+	var max = 2;
+	if(!moves.length){
+		console.log("Game over", this.selectedPiece.color,"Forfeits, no moves");
+		this.winner = this.selectedPiece.color=="White"?"Black":"White";
+		return;
+	}
 	if(moves.length < max) max = moves.length-1;
-	var i = Math.floor(Math.random() * (max + 1));
+	var i = moves[0].move.capture?0:Math.floor(Math.random()*(max+1));
 	var move = moves[i];
 	this.pickUp(move.piece.posit);
 	var _this = this;
@@ -43,17 +49,26 @@ ChessGame.prototype.autoMove = function(){
 	}, 500);
 };
 
-ChessGame.prototype.getAllMoves = function(){
+ChessGame.prototype.getAllMovesForColor = function(c){
+	if(undefined === c) c = this.turn;
 	var allMoves = [];
 	var _this = this;
 	this.iteratePieces(function(p, color){
-		if(_this.turn !== color) return;
+		if(c !== color) return;
 		var mvs = _this.getMoves(p);
 		for(var i =mvs.length; i--;) {
 			if("abcdefgh".split("").indexOf(mvs[i].posit[0]) < 0) continue;
 			allMoves.push({piece:p, move:mvs[i]});
 		}
 	});
+	return allMoves;
+}
+
+ChessGame.prototype.rankAllMoves = function(c){
+	if(undefined === c) c = this.turn;
+	var allMoves = this.getAllMovesForColor(c);
+	var nextMoves = this.getAllMovesForColor(c==="Black"?"White":"Black");
+	var _this=this;
 	for(var i=allMoves.length; i--;){
 		allMoves[i].rating=0;
 		if(allMoves[i].piece.class !== "Pawn") 
@@ -61,13 +76,20 @@ ChessGame.prototype.getAllMoves = function(){
 		if(allMoves[i].move.capture){
 			allMoves[i].rating += 3;
 			var p = _this.getPieceAtPosit(allMoves[i].move.posit);
-			if(p.class !== "Pawn") 
-				allMoves[i].rating += 1;
-			if(p.class === "Queen") 
-				allMoves[i].rating += 3;
-			if(p.class === "King")
-				allMoves[i].rating += 15;
+			if(p.class !== "Pawn") allMoves[i].rating += 2;
+			if(p.class === "Queen") allMoves[i].rating += 3;
+			if(p.class === "King") allMoves[i].rating += 15;
 		}
+		// if this move allows the next turn to capture it, subtract 2 points
+		var cPosit = allMoves[i].move.posit.join(",");
+		for(var n=nextMoves.length; n--;)
+			if(nextMoves[n].move.posit.join(",") === cPosit)
+				allMoves[i].rating -= 2;
+		// subtract one for every time this piece has been moved
+		// attempt to give pieces more equal action
+		for(var n = _this.moveHistory.length; n--;)
+			if(_this.moveHistory[n] === allMoves[i].piece.object.id)
+				allMoves[i].rating -= 1;
 	}
 	allMoves.sort(function(a,b){
 		if(a.rating > b.rating) return -1;
@@ -117,6 +139,7 @@ ChessGame.prototype.move = function(posit, piece, render){
 	var _this = this, moves;
 	(function(cb){
 		if(piece !== undefined) return cb();
+		_this.moveHistory.push(_this.selectedPiece.object.id);
 		moves = _this.getMoves(_this.selectedPiece);
 		for(var i=moves.length; i--;)
 			if(moves[i].posit[0]===posit[0] && moves[i].posit[1]===posit[1])
@@ -151,6 +174,7 @@ ChessGame.prototype.move = function(posit, piece, render){
 									_this.captured.push(_this.pieces[color][name]);
 									if(_this.pieces[color][name].class==="King"){
 										console.log("Game Over, "+color+" Lost the King");
+										_this.winner = color=="White"?"Black":"White";
 										if(_this.moveInt) clearInterval(_this.moveInt);
 									}
 									delete _this.pieces[color][name];
@@ -329,7 +353,7 @@ ChessGame.prototype.getMoves = function(piece){
 			}
 			break;
 		case "King":
-			console.log("to do: check castling");
+			//console.log("to do: check castling");
 			var poMoves = [];
 			poMoves.push([x+1,y]);
 			poMoves.push([x-1,y]);
